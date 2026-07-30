@@ -48,7 +48,7 @@ function CatalogFallback() {
 }
 
 function StoreCatalog() {
-  const { store } = Route.useLoaderData();
+  const { store } = Route.useLoaderData() as { store: DemoStore };
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("Todos");
 
