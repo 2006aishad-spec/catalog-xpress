@@ -1,10 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowLeft, MapPin, MessageCircle, Search, Sparkles } from "lucide-react";
-import { findDemoStore, formatPrice, whatsappLink } from "@/lib/demo-store";
+import { findDemoStore, formatPrice, whatsappLink, type DemoStore } from "@/lib/demo-store";
 
 export const Route = createFileRoute("/loja/$slug")({
-  loader: ({ params }) => {
+  loader: ({ params }): { store: DemoStore } => {
     const store = findDemoStore(params.slug);
     if (!store) throw notFound();
     return { store };
