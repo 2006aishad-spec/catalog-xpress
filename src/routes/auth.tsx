@@ -23,7 +23,7 @@ export const Route = createFileRoute("/auth")({
       },
     ],
   }),
-  component: AuthPage;
+  component: AuthPage,
 });
 
 type Mode = "signin" | "signup" | "forgot";
