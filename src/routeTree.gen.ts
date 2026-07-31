@@ -16,6 +16,8 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedCategoriasRouteImport } from './routes/_authenticated/categorias'
 import { Route as AuthenticatedCriarLojaRouteImport } from './routes/_authenticated/criar-loja'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedEstatisticasRouteImport } from './routes/_authenticated/estatisticas'
+import { Route as AuthenticatedLojaRouteImport } from './routes/_authenticated/loja'
 import { Route as AuthenticatedPedidosRouteImport } from './routes/_authenticated/pedidos'
 import { Route as AuthenticatedProdutosRouteImport } from './routes/_authenticated/produtos'
 import { Route as LojaSlugRouteImport } from './routes/loja.$slug'
@@ -54,6 +56,17 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEstatisticasRoute =
+  AuthenticatedEstatisticasRouteImport.update({
+    id: '/estatisticas',
+    path: '/estatisticas',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLojaRoute = AuthenticatedLojaRouteImport.update({
+  id: '/loja',
+  path: '/loja',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPedidosRoute = AuthenticatedPedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
@@ -77,6 +90,8 @@ export interface FileRoutesByFullPath {
   '/categorias': typeof AuthenticatedCategoriasRoute
   '/criar-loja': typeof AuthenticatedCriarLojaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/estatisticas': typeof AuthenticatedEstatisticasRoute
+  '/loja': typeof AuthenticatedLojaRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/produtos': typeof AuthenticatedProdutosRoute
   '/loja/$slug': typeof LojaSlugRoute
@@ -88,6 +103,8 @@ export interface FileRoutesByTo {
   '/categorias': typeof AuthenticatedCategoriasRoute
   '/criar-loja': typeof AuthenticatedCriarLojaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/estatisticas': typeof AuthenticatedEstatisticasRoute
+  '/loja': typeof AuthenticatedLojaRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/produtos': typeof AuthenticatedProdutosRoute
   '/loja/$slug': typeof LojaSlugRoute
@@ -101,6 +118,8 @@ export interface FileRoutesById {
   '/_authenticated/categorias': typeof AuthenticatedCategoriasRoute
   '/_authenticated/criar-loja': typeof AuthenticatedCriarLojaRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/estatisticas': typeof AuthenticatedEstatisticasRoute
+  '/_authenticated/loja': typeof AuthenticatedLojaRoute
   '/_authenticated/pedidos': typeof AuthenticatedPedidosRoute
   '/_authenticated/produtos': typeof AuthenticatedProdutosRoute
   '/loja/$slug': typeof LojaSlugRoute
@@ -114,6 +133,8 @@ export interface FileRouteTypes {
     | '/categorias'
     | '/criar-loja'
     | '/dashboard'
+    | '/estatisticas'
+    | '/loja'
     | '/pedidos'
     | '/produtos'
     | '/loja/$slug'
@@ -125,6 +146,8 @@ export interface FileRouteTypes {
     | '/categorias'
     | '/criar-loja'
     | '/dashboard'
+    | '/estatisticas'
+    | '/loja'
     | '/pedidos'
     | '/produtos'
     | '/loja/$slug'
@@ -137,6 +160,8 @@ export interface FileRouteTypes {
     | '/_authenticated/categorias'
     | '/_authenticated/criar-loja'
     | '/_authenticated/dashboard'
+    | '/_authenticated/estatisticas'
+    | '/_authenticated/loja'
     | '/_authenticated/pedidos'
     | '/_authenticated/produtos'
     | '/loja/$slug'
@@ -201,6 +226,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/estatisticas': {
+      id: '/_authenticated/estatisticas'
+      path: '/estatisticas'
+      fullPath: '/estatisticas'
+      preLoaderRoute: typeof AuthenticatedEstatisticasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/loja': {
+      id: '/_authenticated/loja'
+      path: '/loja'
+      fullPath: '/loja'
+      preLoaderRoute: typeof AuthenticatedLojaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pedidos': {
       id: '/_authenticated/pedidos'
       path: '/pedidos'
@@ -229,6 +268,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCategoriasRoute: typeof AuthenticatedCategoriasRoute
   AuthenticatedCriarLojaRoute: typeof AuthenticatedCriarLojaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEstatisticasRoute: typeof AuthenticatedEstatisticasRoute
+  AuthenticatedLojaRoute: typeof AuthenticatedLojaRoute
   AuthenticatedPedidosRoute: typeof AuthenticatedPedidosRoute
   AuthenticatedProdutosRoute: typeof AuthenticatedProdutosRoute
 }
@@ -237,6 +278,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCategoriasRoute: AuthenticatedCategoriasRoute,
   AuthenticatedCriarLojaRoute: AuthenticatedCriarLojaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEstatisticasRoute: AuthenticatedEstatisticasRoute,
+  AuthenticatedLojaRoute: AuthenticatedLojaRoute,
   AuthenticatedPedidosRoute: AuthenticatedPedidosRoute,
   AuthenticatedProdutosRoute: AuthenticatedProdutosRoute,
 }
