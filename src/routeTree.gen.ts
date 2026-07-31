@@ -13,7 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedCategoriasRouteImport } from './routes/_authenticated/categorias'
 import { Route as AuthenticatedCriarLojaRouteImport } from './routes/_authenticated/criar-loja'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as LojaSlugRouteImport } from './routes/loja.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,9 +37,19 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCategoriasRoute = AuthenticatedCategoriasRouteImport.update({
+  id: '/categorias',
+  path: '/categorias',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCriarLojaRoute = AuthenticatedCriarLojaRouteImport.update({
   id: '/criar-loja',
   path: '/criar-loja',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const LojaSlugRoute = LojaSlugRouteImport.update({
@@ -50,14 +62,18 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/categorias': typeof AuthenticatedCategoriasRoute
   '/criar-loja': typeof AuthenticatedCriarLojaRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/loja/$slug': typeof LojaSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/categorias': typeof AuthenticatedCategoriasRoute
   '/criar-loja': typeof AuthenticatedCriarLojaRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/loja/$slug': typeof LojaSlugRoute
 }
 export interface FileRoutesById {
@@ -66,21 +82,39 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/categorias': typeof AuthenticatedCategoriasRoute
   '/_authenticated/criar-loja': typeof AuthenticatedCriarLojaRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/loja/$slug': typeof LojaSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/reset-password' | '/criar-loja' | '/loja/$slug'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/categorias'
+    | '/criar-loja'
+    | '/dashboard'
+    | '/loja/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/reset-password' | '/criar-loja' | '/loja/$slug'
+  to:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/categorias'
+    | '/criar-loja'
+    | '/dashboard'
+    | '/loja/$slug'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/_authenticated/categorias'
     | '/_authenticated/criar-loja'
+    | '/_authenticated/dashboard'
     | '/loja/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -122,11 +156,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/categorias': {
+      id: '/_authenticated/categorias'
+      path: '/categorias'
+      fullPath: '/categorias'
+      preLoaderRoute: typeof AuthenticatedCategoriasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/criar-loja': {
       id: '/_authenticated/criar-loja'
       path: '/criar-loja'
       fullPath: '/criar-loja'
       preLoaderRoute: typeof AuthenticatedCriarLojaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/loja/$slug': {
@@ -140,11 +188,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCategoriasRoute: typeof AuthenticatedCategoriasRoute
   AuthenticatedCriarLojaRoute: typeof AuthenticatedCriarLojaRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCategoriasRoute: AuthenticatedCategoriasRoute,
   AuthenticatedCriarLojaRoute: AuthenticatedCriarLojaRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
