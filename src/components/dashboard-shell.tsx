@@ -1,17 +1,20 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   BarChart3,
   Boxes,
   LayoutDashboard,
   LogOut,
   Settings,
+  ShieldCheck,
   ShoppingBag,
   Sparkles,
   Tags,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { amIAdmin } from "@/lib/admin.functions";
 
 const navItems = [
   { to: "/dashboard", label: "Visão geral", icon: LayoutDashboard },
@@ -35,6 +38,13 @@ export function DashboardShell({
 }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const checkAdmin = useServerFn(amIAdmin);
+  const { data: isAdmin } = useQuery({
+    queryKey: ["am-i-admin"],
+    queryFn: () => checkAdmin(),
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
 
   async function signOut() {
     await queryClient.cancelQueries();
@@ -72,6 +82,15 @@ export function DashboardShell({
               <Icon className="h-4 w-4" /> {label}
             </Link>
           ))}
+          {isAdmin ? (
+            <Link
+              to="/admin"
+              activeProps={{ className: "bg-primary/15 text-primary" }}
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ShieldCheck className="h-4 w-4" /> Admin
+            </Link>
+          ) : null}
         </nav>
       </header>
 

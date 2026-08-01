@@ -7,6 +7,12 @@ import { useMyStore } from "@/hooks/use-store-data";
 import { onlyDigits, slugify } from "@/lib/store-helpers";
 
 export const Route = createFileRoute("/_authenticated/criar-loja")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    plan:
+      search["plan"] === "basic" || search["plan"] === "pro"
+        ? (search["plan"] as "basic" | "pro")
+        : undefined,
+  }),
   component: CreateStorePage,
 });
 
@@ -22,6 +28,7 @@ const categories = [
 
 function CreateStorePage() {
   const navigate = useNavigate();
+  const { plan } = Route.useSearch();
   const { data: store, isLoading } = useMyStore();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -56,6 +63,7 @@ function CreateStorePage() {
         category,
         location: location.trim(),
         whatsapp_number: digits,
+        plan: plan ?? "free",
         owner_name: (userData.user?.user_metadata?.full_name as string) ?? null,
       });
       if (error) {

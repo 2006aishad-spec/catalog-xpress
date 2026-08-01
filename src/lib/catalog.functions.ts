@@ -1,6 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
 
 export type PublicStore = {
   id: string;
@@ -42,21 +40,8 @@ export type PublicCatalog = {
 export const getPublicCatalog = createServerFn({ method: "GET" })
   .inputValidator((data: { slug: string }) => ({ slug: String(data.slug).slice(0, 60) }))
   .handler(async ({ data }): Promise<PublicCatalog> => {
-    const url = process.env.SUPABASE_URL!;
-    const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-    const client = createClient<Database>(url, key, {
-      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-      global: {
-        fetch: (input, init) => {
-          const headers = new Headers(init?.headers);
-          if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
-            headers.delete("Authorization");
-          }
-          headers.set("apikey", key);
-          return fetch(input, { ...init, headers });
-        },
-      },
-    });
+    const { publicClient } = await import("./supabase-public.server");
+    const client = publicClient();
 
     const { data: store } = await client
       .from("stores")
@@ -110,3 +95,69 @@ export const getPublicCatalog = createServerFn({ method: "GET" })
     };
   });
 
+export const logStoreEvent = createServerFn({ method: "POST" })
+  .inputValidator(
+    (data: {
+      storeId: string;
+      eventType: "catalog_view" | "whatsapp_click" | "product_view";
+      productId?: string | null;
+      device?: string;
+    }) => ({
+      storeId: String(data.storeId).slice(0, 40),
+      eventType: data.eventType,
+      productId: data.productId ? String(data.productId).slice(0, 40) : null,
+      device: (data.device ?? "unknown").slice(0, 20),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { publicClient } = await import("./supabase-public.server");
+    const allowed = ["catalog_view", "whatsapp_click", "product_view"];
+    if (!allowed.includes(data.eventType)) return { ok: false };
+    await publicClient().from("store_events").insert({
+      store_id: data.storeId,
+      product_id: data.productId,
+      event_type: data.eventType,
+      device: data.device,
+      source: "catalog",
+    });
+    return { ok: true };
+  });
+
+export const createOrderLead = createServerFn({ method: "POST" })
+  .inputValidator(
+    (data: {
+      storeId: string;
+      productId?: string | null;
+      productName: string;
+      customerName?: string;
+      customerPhone?: string;
+      quantity?: number;
+      variant?: string;
+      notes?: string;
+    }) => ({
+      storeId: String(data.storeId).slice(0, 40),
+      productId: data.productId ? String(data.productId).slice(0, 40) : null,
+      productName: String(data.productName).slice(0, 160),
+      customerName: String(data.customerName ?? "Cliente do catálogo").slice(0, 120),
+      customerPhone: String(data.customerPhone ?? "").slice(0, 40),
+      quantity: Math.min(Math.max(Number(data.quantity ?? 1) || 1, 1), 999),
+      variant: data.variant ? String(data.variant).slice(0, 120) : null,
+      notes: data.notes ? String(data.notes).slice(0, 800) : null,
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { publicClient } = await import("./supabase-public.server");
+    const { error } = await publicClient()
+      .from("orders")
+      .insert({
+        store_id: data.storeId,
+        product_id: data.productId,
+        product_name: data.productName,
+        customer_name: data.customerName,
+        customer_phone: data.customerPhone,
+        quantity: data.quantity,
+        variant: data.variant,
+        notes: data.notes,
+      });
+    return { ok: !error };
+  });

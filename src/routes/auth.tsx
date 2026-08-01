@@ -7,7 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: z.object({ redirect: z.string().optional() }),
+  validateSearch: z.object({
+    redirect: z.string().optional(),
+    mode: z.enum(["signin", "signup", "forgot"]).optional(),
+    plan: z.enum(["free", "basic", "pro"]).optional(),
+  }),
   head: () => ({
     meta: [
       { title: "Entrar ou criar conta — Djumbai Shop" },
@@ -29,9 +33,9 @@ export const Route = createFileRoute("/auth")({
 type Mode = "signin" | "signup" | "forgot";
 
 function AuthPage() {
-  const { redirect } = Route.useSearch();
+  const { redirect, mode: initialMode, plan } = Route.useSearch();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("signin");
+  const [mode, setMode] = useState<Mode>(initialMode ?? "signin");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,7 +65,7 @@ function AuthPage() {
         });
         if (error) throw error;
         if (data.session) {
-          navigate({ to: "/criar-loja" });
+          navigate({ to: "/criar-loja", search: plan ? { plan } : {} });
         } else {
           setSent("confirm");
         }
