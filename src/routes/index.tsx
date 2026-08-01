@@ -19,6 +19,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import heroCatalog from "@/assets/hero-catalog.jpg";
+import { useSession } from "@/hooks/use-session";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -86,6 +87,7 @@ const plans = [
     note: "para começar hoje",
     features: ["10 produtos", "2 categorias", "Link do catálogo", "Botão WhatsApp"],
     cta: "Começar grátis",
+    planId: "free",
   },
   {
     name: "Básico",
@@ -99,6 +101,7 @@ const plans = [
       "Estatísticas essenciais",
     ],
     cta: "Escolher Básico",
+    planId: "basic",
     highlight: true,
   },
   {
@@ -113,6 +116,7 @@ const plans = [
       "Suporte prioritário",
     ],
     cta: "Escolher Pro",
+    planId: "pro",
   },
 ];
 
@@ -154,6 +158,8 @@ const faqs = [
 ];
 
 function Landing() {
+  const { session } = useSession();
+
   return (
     <main className="min-h-screen overflow-x-hidden">
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -171,13 +177,31 @@ function Landing() {
             >
               Planos
             </a>
-            <Link
-              to="/loja/$slug"
-              params={{ slug: "bela-moda" }}
-              className="rounded-xl border border-border px-3 py-2 text-sm font-medium transition-colors hover:border-primary/50 hover:bg-secondary/60"
-            >
-              Ver demo
-            </Link>
+            {session ? (
+              <Link
+                to="/dashboard"
+                className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
+              >
+                Ir para o painel
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/auth"
+                  search={{ mode: "signin" }}
+                  className="rounded-xl border border-border px-3 py-2 text-sm font-medium transition-colors hover:border-primary/50 hover:bg-secondary/60"
+                >
+                  Entrar
+                </Link>
+                <Link
+                  to="/auth"
+                  search={{ plan: "free", mode: "signup" }}
+                  className="rounded-xl bg-success px-3 py-2 text-sm font-semibold text-success-foreground"
+                >
+                  Criar loja
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -198,19 +222,19 @@ function Landing() {
               encomendas organizadas. Sem loja online complicada, sem taxas por venda.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a
-                href="#planos"
+              <Link
+                to="/auth"
+                search={{ plan: "free", mode: "signup" }}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-success px-6 py-3.5 font-semibold text-success-foreground transition-transform hover:scale-[1.02] active:scale-100"
               >
                 Criar catálogo grátis <ArrowRight className="h-4 w-4" />
-              </a>
-              <Link
-                to="/loja/$slug"
-                params={{ slug: "bela-moda" }}
+              </Link>
+              <a
+                href="#planos"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-6 py-3.5 font-semibold transition-colors hover:border-primary/50 hover:bg-secondary/60"
               >
-                <Smartphone className="h-4 w-4" /> Ver catálogo de exemplo
-              </Link>
+                <Smartphone className="h-4 w-4" /> Ver planos
+              </a>
             </div>
             <dl className="mt-10 grid grid-cols-3 gap-4 border-t border-border/60 pt-6">
               {[
@@ -346,16 +370,17 @@ function Landing() {
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  className={`mt-7 w-full rounded-xl px-5 py-3 font-semibold transition-transform hover:scale-[1.02] active:scale-100 ${
+                <Link
+                  to="/auth"
+                  search={{ plan: plan.planId, mode: "signup" }}
+                  className={`mt-7 inline-flex w-full items-center justify-center rounded-xl px-5 py-3 font-semibold transition-transform hover:scale-[1.02] active:scale-100 ${
                     plan.highlight
                       ? "bg-success text-success-foreground"
                       : "border border-border bg-secondary/60 text-foreground"
                   }`}
                 >
                   {plan.cta}
-                </button>
+                </Link>
               </article>
             ))}
           </div>
@@ -401,12 +426,13 @@ function Landing() {
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
             Grátis para começar. Sem cartão, sem comissão por venda.
           </p>
-          <a
-            href="#planos"
+          <Link
+            to="/auth"
+            search={{ plan: "free", mode: "signup" }}
             className="mt-7 inline-flex items-center justify-center gap-2 rounded-xl bg-success px-7 py-3.5 font-semibold text-success-foreground transition-transform hover:scale-[1.02] active:scale-100"
           >
             Criar a minha loja <ArrowRight className="h-4 w-4" />
-          </a>
+          </Link>
         </div>
       </section>
 
