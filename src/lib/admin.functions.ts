@@ -31,13 +31,6 @@ export type AdminOverview = {
   stores: AdminStoreRow[];
 };
 
-async function assertAdmin(supabase: {
-  rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }>;
-}, userId: string) {
-  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-  if (data !== true) throw new Error("Forbidden");
-}
-
 export const amIAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<boolean> => {
@@ -51,7 +44,11 @@ export const amIAdmin = createServerFn({ method: "GET" })
 export const getAdminOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AdminOverview> => {
-    await assertAdmin(context.supabase, context.userId);
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (isAdmin !== true) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const [stores, products, orders, events] = await Promise.all([
@@ -106,12 +103,16 @@ export const adminUpdateStore = createServerFn({ method: "POST" })
         : undefined,
   }))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (isAdmin !== true) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, string> = {};
-    if (data.plan) patch["plan"] = data.plan;
-    if (data.status) patch["status"] = data.status;
-    if (!Object.keys(patch).length) return { ok: false };
+    const patch: { plan?: string; status?: string } = {};
+    if (data.plan) patch.plan = data.plan;
+    if (data.status) patch.status = data.status;
+    if (!data.plan && !data.status) return { ok: false };
     const { error } = await supabaseAdmin.from("stores").update(patch).eq("id", data.storeId);
     if (error) throw error;
     return { ok: true };
