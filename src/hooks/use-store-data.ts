@@ -8,9 +8,11 @@ export type Category = Tables<"categories">;
 export type Order = Tables<"orders">;
 
 export async function currentUserId() {
-  const { data } = await supabase.auth.getUser();
-  return data.user?.id ?? null;
+  // Sessão local: evita depender da rede para saber quem está autenticado.
+  const { data } = await supabase.auth.getSession();
+  return data.session?.user?.id ?? null;
 }
+
 
 export function useMyStore() {
   return useQuery({

@@ -243,9 +243,11 @@ function ProductForm({
       let imagePath = product?.image_url ?? null;
       if (file) {
         if (file.size > 5 * 1024 * 1024) throw new Error("A imagem não pode passar de 5 MB.");
-        const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user) throw new Error("Sessão expirada.");
-        imagePath = await uploadProductImage(file, userData.user.id);
+        const { data: sessionData } = await supabase.auth.getSession();
+        const sessionUser = sessionData.session?.user;
+        if (!sessionUser) throw new Error("Sessão expirada.");
+        imagePath = await uploadProductImage(file, sessionUser.id);
+
       }
 
       const payload = {

@@ -47,8 +47,10 @@ function CreateStorePage() {
     event.preventDefault();
     setSaving(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData.user?.id;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sessionUser = sessionData.session?.user;
+      const uid = sessionUser?.id;
+
       if (!uid) throw new Error("Sessão expirada. Entra outra vez.");
       const finalSlug = slugify(slugEdited ? slug : name);
       if (finalSlug.length < 3) throw new Error("O link da loja precisa de pelo menos 3 letras.");
@@ -64,7 +66,7 @@ function CreateStorePage() {
         location: location.trim(),
         whatsapp_number: digits,
         plan: plan ?? "free",
-        owner_name: (userData.user?.user_metadata?.full_name as string) ?? null,
+        owner_name: (sessionUser?.user_metadata?.["full_name"] as string) ?? null,
       });
       if (error) {
         if (error.code === "23505" || /duplicate|unique/i.test(error.message)) {
