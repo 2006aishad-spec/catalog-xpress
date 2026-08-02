@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+
 import {
   BadgeCheck,
   Check,
@@ -24,6 +26,8 @@ import {
   useStoreStats,
 } from "@/hooks/use-store-data";
 import { formatPrice, planOf } from "@/lib/store-helpers";
+import { getPublicCatalog } from "@/lib/catalog.functions";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -31,7 +35,9 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function DashboardPage() {
   const queryClient = useQueryClient();
+  const verifyCatalog = useServerFn(getPublicCatalog);
   const { data: store, isLoading } = useMyStore();
+
   const { data: products = [] } = useProducts(store?.id);
   const { data: categories = [] } = useCategories(store?.id);
   const { data: orders = [] } = useOrders(store?.id);
