@@ -60,14 +60,20 @@ function StoreSettingsPage() {
   }
 
   async function changePlan(planId: string) {
-    const { error } = await supabase.from("stores").update({ plan: planId }).eq("id", store!.id);
+    // Planos pagos NÃO são ativados automaticamente — só a equipa confirma após pagamento.
+    if (planId !== "free") {
+      setPendingPlan(planId);
+      return;
+    }
+    const { error } = await supabase.from("stores").update({ plan: "free" }).eq("id", store!.id);
     if (error) {
       toast.error("Não foi possível mudar de plano.");
       return;
     }
-    toast.success("Plano atualizado. O pagamento é combinado com a nossa equipa.");
+    toast.success("Voltaste ao plano Grátis.");
     queryClient.invalidateQueries({ queryKey: ["my-store"] });
   }
+
 
   return (
     <DashboardShell
