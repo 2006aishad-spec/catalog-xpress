@@ -49,9 +49,15 @@ export function DashboardShell({
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    // Aguardar o signOut garante que não fica sessão "fantasma" no dispositivo.
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      /* ignorado: a sessão local é limpa de qualquer forma */
+    }
+    navigate({ to: "/", replace: true });
   }
+
 
   return (
     <div className="min-h-screen">
