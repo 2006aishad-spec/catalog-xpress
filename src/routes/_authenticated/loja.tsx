@@ -133,9 +133,10 @@ function StoreSettingsPage() {
 
       <h2 className="mt-10 text-xl font-bold">Plano da loja</h2>
       <p className="mt-1.5 text-sm text-muted-foreground">
-        Plano atual: <span className="text-foreground">{plan.name}</span>. Podes mudar a qualquer
-        momento — sem contratos.
+        Plano atual: <span className="text-foreground">{plan.name}</span>. Os planos pagos são
+        ativados pela nossa equipa após confirmação do pagamento.
       </p>
+
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
         {Object.values(PLANS).map((item) => (
           <article
@@ -176,12 +177,52 @@ function StoreSettingsPage() {
               onClick={() => changePlan(item.id)}
               className="mt-5 w-full rounded-xl border border-border px-4 py-2.5 text-sm font-semibold disabled:opacity-50"
             >
-              {item.id === plan.id ? "Plano atual" : `Mudar para ${item.name}`}
+              {item.id === plan.id
+                ? "Plano atual"
+                : item.id === "free"
+                  ? "Voltar ao Grátis"
+                  : `Pedir ${item.name}`}
             </button>
           </article>
         ))}
       </div>
+
+      {pendingPlan ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-background/80 p-5 backdrop-blur">
+          <div className="glass-panel w-full max-w-md rounded-2xl p-6">
+            <h3 className="text-lg font-semibold">Pedido de plano {planOf(pendingPlan).name}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              O teu pedido fica <span className="text-warning">pendente de confirmação da nossa
+              equipa</span>. A loja mantém-se no plano atual até o pagamento ser confirmado
+              manualmente — nada é cobrado nem ativado automaticamente.
+            </p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Fala com a equipa Djumbai para combinar o pagamento e ativar o plano.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <a
+                href={`https://wa.me/245955209731?text=${encodeURIComponent(
+                  `Olá Djumbai Shop! Quero o plano ${planOf(pendingPlan).name} para a loja ${store.name} (${store.slug}).`,
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-success px-4 py-2.5 text-sm font-semibold text-success-foreground"
+              >
+                Falar no WhatsApp
+              </a>
+              <button
+                type="button"
+                onClick={() => setPendingPlan(null)}
+                className="rounded-xl border border-border px-4 py-2.5 text-sm font-medium"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </DashboardShell>
+
   );
 }
 
