@@ -16,6 +16,8 @@ function StoreSettingsPage() {
   const queryClient = useQueryClient();
   const { data: store, isLoading } = useMyStore();
   const [saving, setSaving] = useState(false);
+  const [pendingPlan, setPendingPlan] = useState<string | null>(null);
+
 
   if (isLoading) {
     return (
