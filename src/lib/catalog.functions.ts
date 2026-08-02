@@ -43,7 +43,7 @@ export const getPublicCatalog = createServerFn({ method: "GET" })
     const { publicClient } = await import("./supabase-public.server");
     const client = publicClient();
 
-    const { data: store } = await client
+    const { data: store, error: storeError } = await client
       .from("stores")
       .select(
         "id, name, slug, tagline, description, category, location, currency, whatsapp_number, primary_color, logo_url, banner_url, plan",
@@ -52,48 +52,79 @@ export const getPublicCatalog = createServerFn({ method: "GET" })
       .eq("status", "published")
       .maybeSingle();
 
+    if (storeError) {
+      console.error("[catalog] store lookup failed", { slug: data.slug, error: storeError });
+      return null;
+    }
     if (!store) return null;
 
-    const [{ data: categories }, { data: products }] = await Promise.all([
-      client
-        .from("categories")
-        .select("id, name")
-        .eq("store_id", store.id)
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true }),
-      client
-        .from("products")
-        .select(
-          "id, name, description, price, sale_price, image_url, stock, sku, sizes, colors, is_featured, category_id",
-        )
-        .eq("store_id", store.id)
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true }),
-    ]);
+    let categories: { id: string; name: string }[] = [];
+    let rawProducts: Record<string, unknown>[] = [];
+    try {
+      const [catRes, prodRes] = await Promise.all([
+        client
+          .from("categories")
+          .select("id, name")
+          .eq("store_id", store.id)
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true }),
+        client
+          .from("products")
+          .select(
+            "id, name, description, price, sale_price, image_url, stock, sku, sizes, colors, is_featured, category_id",
+          )
+          .eq("store_id", store.id)
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true }),
+      ]);
+      if (catRes.error) console.error("[catalog] categories failed", { slug: data.slug, error: catRes.error });
+      if (prodRes.error) console.error("[catalog] products failed", { slug: data.slug, error: prodRes.error });
+      categories = catRes.data ?? [];
+      rawProducts = (prodRes.data ?? []) as Record<string, unknown>[];
+    } catch (error) {
+      // Falha de leitura não deve derrubar a loja: mostramos o cabeçalho da loja.
+      console.error("[catalog] unexpected read failure", { slug: data.slug, error });
+    }
 
-    const rawProducts = products ?? [];
-    const paths = rawProducts.map((p) => p.image_url).filter((p): p is string => !!p);
+    // Storage é uma dependência independente: se falhar, o catálogo carrega sem fotos.
     const signed = new Map<string, string>();
+    const paths = rawProducts
+      .map((p) => p["image_url"])
+      .filter((p): p is string => typeof p === "string" && p.length > 0);
     if (paths.length) {
-      const { data: urls } = await client.storage
-        .from("produtos")
-        .createSignedUrls(paths, 60 * 60 * 24 * 30);
-      urls?.forEach((entry) => {
-        if (entry.path && entry.signedUrl) signed.set(entry.path, entry.signedUrl);
-      });
+      try {
+        const { data: urls, error } = await client.storage
+          .from("produtos")
+          .createSignedUrls(paths, 60 * 60 * 24 * 30);
+        if (error) console.error("[catalog] createSignedUrls failed", { slug: data.slug, error });
+        urls?.forEach((entry) => {
+          // Entradas com erro parcial são ignoradas; as válidas continuam a ser usadas.
+          if (entry.error) {
+            console.error("[catalog] signed url entry failed", { path: entry.path, error: entry.error });
+            return;
+          }
+          if (entry.path && entry.signedUrl) signed.set(entry.path, entry.signedUrl);
+        });
+      } catch (error) {
+        console.error("[catalog] storage unavailable", { slug: data.slug, error });
+      }
     }
 
     return {
       store: store as PublicStore,
-      categories: categories ?? [],
-      products: rawProducts.map((p) => ({
-        ...p,
-        image_url: p.image_url ? (signed.get(p.image_url) ?? null) : null,
-        price: Number(p.price),
-        sale_price: p.sale_price === null ? null : Number(p.sale_price),
-      })) as PublicProduct[],
+      categories,
+      products: rawProducts.map((p) => {
+        const path = typeof p["image_url"] === "string" ? (p["image_url"] as string) : null;
+        return {
+          ...p,
+          image_url: path ? (signed.get(path) ?? null) : null,
+          price: Number(p["price"] ?? 0),
+          sale_price: p["sale_price"] === null || p["sale_price"] === undefined ? null : Number(p["sale_price"]),
+        };
+      }) as PublicProduct[],
     };
   });
+
 
 export const logStoreEvent = createServerFn({ method: "POST" })
   .inputValidator(
