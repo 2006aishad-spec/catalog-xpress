@@ -68,17 +68,33 @@ function DashboardPage() {
   ];
 
   async function publish() {
+    const nextStatus = published ? "draft" : "published";
     const { error } = await supabase
       .from("stores")
-      .update({ status: published ? "draft" : "published" })
+      .update({ status: nextStatus })
       .eq("id", store!.id);
     if (error) {
       toast.error("Não foi possível atualizar o estado da loja.");
       return;
     }
-    toast.success(published ? "Catálogo passou a rascunho." : "Catálogo publicado!");
     queryClient.invalidateQueries({ queryKey: ["my-store"] });
+    if (nextStatus === "draft") {
+      toast.success("Catálogo passou a rascunho.");
+      return;
+    }
+    // Verificação real: confirmar que o catálogo público carrega de facto.
+    try {
+      const catalog = await verifyCatalog({ data: { slug: store!.slug } });
+      if (catalog?.store) {
+        toast.success("Catálogo publicado e acessível!");
+      } else {
+        toast.error("Publicação incompleta — o catálogo ainda não está acessível.");
+      }
+    } catch {
+      toast.error("Publicação incompleta — o catálogo ainda não está acessível.");
+    }
   }
+
 
   async function copyLink() {
     await navigator.clipboard.writeText(publicUrl);
