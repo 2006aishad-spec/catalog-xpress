@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedCategoriasRouteImport } from './routes/_authenticated/categorias'
+import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
 import { Route as AuthenticatedCriarLojaRouteImport } from './routes/_authenticated/criar-loja'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedEstatisticasRouteImport } from './routes/_authenticated/estatisticas'
@@ -51,6 +52,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 const AuthenticatedCategoriasRoute = AuthenticatedCategoriasRouteImport.update({
   id: '/categorias',
   path: '/categorias',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCheckoutRoute = AuthenticatedCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCriarLojaRoute = AuthenticatedCriarLojaRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/categorias': typeof AuthenticatedCategoriasRoute
+  '/checkout': typeof AuthenticatedCheckoutRoute
   '/criar-loja': typeof AuthenticatedCriarLojaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/estatisticas': typeof AuthenticatedEstatisticasRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/categorias': typeof AuthenticatedCategoriasRoute
+  '/checkout': typeof AuthenticatedCheckoutRoute
   '/criar-loja': typeof AuthenticatedCriarLojaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/estatisticas': typeof AuthenticatedEstatisticasRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/categorias': typeof AuthenticatedCategoriasRoute
+  '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
   '/_authenticated/criar-loja': typeof AuthenticatedCriarLojaRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/estatisticas': typeof AuthenticatedEstatisticasRoute
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin'
     | '/categorias'
+    | '/checkout'
     | '/criar-loja'
     | '/dashboard'
     | '/estatisticas'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin'
     | '/categorias'
+    | '/checkout'
     | '/criar-loja'
     | '/dashboard'
     | '/estatisticas'
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/categorias'
+    | '/_authenticated/checkout'
     | '/_authenticated/criar-loja'
     | '/_authenticated/dashboard'
     | '/_authenticated/estatisticas'
@@ -243,6 +255,13 @@ declare module '@tanstack/react-router' {
       path: '/categorias'
       fullPath: '/categorias'
       preLoaderRoute: typeof AuthenticatedCategoriasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/checkout': {
+      id: '/_authenticated/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof AuthenticatedCheckoutRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/criar-loja': {
@@ -307,6 +326,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedCategoriasRoute: typeof AuthenticatedCategoriasRoute
+  AuthenticatedCheckoutRoute: typeof AuthenticatedCheckoutRoute
   AuthenticatedCriarLojaRoute: typeof AuthenticatedCriarLojaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEstatisticasRoute: typeof AuthenticatedEstatisticasRoute
@@ -318,6 +338,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedCategoriasRoute: AuthenticatedCategoriasRoute,
+  AuthenticatedCheckoutRoute: AuthenticatedCheckoutRoute,
   AuthenticatedCriarLojaRoute: AuthenticatedCriarLojaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEstatisticasRoute: AuthenticatedEstatisticasRoute,
