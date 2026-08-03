@@ -15,13 +15,16 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedCategoriasRouteImport } from './routes/_authenticated/categorias'
+import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
 import { Route as AuthenticatedCriarLojaRouteImport } from './routes/_authenticated/criar-loja'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDjumbaiPayRouteImport } from './routes/_authenticated/djumbai-pay'
 import { Route as AuthenticatedEstatisticasRouteImport } from './routes/_authenticated/estatisticas'
 import { Route as AuthenticatedLojaRouteImport } from './routes/_authenticated/loja'
 import { Route as AuthenticatedPedidosRouteImport } from './routes/_authenticated/pedidos'
 import { Route as AuthenticatedProdutosRouteImport } from './routes/_authenticated/produtos'
 import { Route as LojaSlugRouteImport } from './routes/loja.$slug'
+import { Route as ApiPublicWebhooksSmsInboundRouteImport } from './routes/api/public/webhooks/sms-inbound'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +55,11 @@ const AuthenticatedCategoriasRoute = AuthenticatedCategoriasRouteImport.update({
   path: '/categorias',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCheckoutRoute = AuthenticatedCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCriarLojaRoute = AuthenticatedCriarLojaRouteImport.update({
   id: '/criar-loja',
   path: '/criar-loja',
@@ -60,6 +68,11 @@ const AuthenticatedCriarLojaRoute = AuthenticatedCriarLojaRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDjumbaiPayRoute = AuthenticatedDjumbaiPayRouteImport.update({
+  id: '/djumbai-pay',
+  path: '/djumbai-pay',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedEstatisticasRoute =
@@ -88,6 +101,12 @@ const LojaSlugRoute = LojaSlugRouteImport.update({
   path: '/loja/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhooksSmsInboundRoute =
+  ApiPublicWebhooksSmsInboundRouteImport.update({
+    id: '/api/public/webhooks/sms-inbound',
+    path: '/api/public/webhooks/sms-inbound',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -95,13 +114,16 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/categorias': typeof AuthenticatedCategoriasRoute
+  '/checkout': typeof AuthenticatedCheckoutRoute
   '/criar-loja': typeof AuthenticatedCriarLojaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/djumbai-pay': typeof AuthenticatedDjumbaiPayRoute
   '/estatisticas': typeof AuthenticatedEstatisticasRoute
   '/loja': typeof AuthenticatedLojaRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/produtos': typeof AuthenticatedProdutosRoute
   '/loja/$slug': typeof LojaSlugRoute
+  '/api/public/webhooks/sms-inbound': typeof ApiPublicWebhooksSmsInboundRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -109,13 +131,16 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/categorias': typeof AuthenticatedCategoriasRoute
+  '/checkout': typeof AuthenticatedCheckoutRoute
   '/criar-loja': typeof AuthenticatedCriarLojaRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/djumbai-pay': typeof AuthenticatedDjumbaiPayRoute
   '/estatisticas': typeof AuthenticatedEstatisticasRoute
   '/loja': typeof AuthenticatedLojaRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/produtos': typeof AuthenticatedProdutosRoute
   '/loja/$slug': typeof LojaSlugRoute
+  '/api/public/webhooks/sms-inbound': typeof ApiPublicWebhooksSmsInboundRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,13 +150,16 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/categorias': typeof AuthenticatedCategoriasRoute
+  '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
   '/_authenticated/criar-loja': typeof AuthenticatedCriarLojaRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/djumbai-pay': typeof AuthenticatedDjumbaiPayRoute
   '/_authenticated/estatisticas': typeof AuthenticatedEstatisticasRoute
   '/_authenticated/loja': typeof AuthenticatedLojaRoute
   '/_authenticated/pedidos': typeof AuthenticatedPedidosRoute
   '/_authenticated/produtos': typeof AuthenticatedProdutosRoute
   '/loja/$slug': typeof LojaSlugRoute
+  '/api/public/webhooks/sms-inbound': typeof ApiPublicWebhooksSmsInboundRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,13 +169,16 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin'
     | '/categorias'
+    | '/checkout'
     | '/criar-loja'
     | '/dashboard'
+    | '/djumbai-pay'
     | '/estatisticas'
     | '/loja'
     | '/pedidos'
     | '/produtos'
     | '/loja/$slug'
+    | '/api/public/webhooks/sms-inbound'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -155,13 +186,16 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin'
     | '/categorias'
+    | '/checkout'
     | '/criar-loja'
     | '/dashboard'
+    | '/djumbai-pay'
     | '/estatisticas'
     | '/loja'
     | '/pedidos'
     | '/produtos'
     | '/loja/$slug'
+    | '/api/public/webhooks/sms-inbound'
   id:
     | '__root__'
     | '/'
@@ -170,13 +204,16 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/categorias'
+    | '/_authenticated/checkout'
     | '/_authenticated/criar-loja'
     | '/_authenticated/dashboard'
+    | '/_authenticated/djumbai-pay'
     | '/_authenticated/estatisticas'
     | '/_authenticated/loja'
     | '/_authenticated/pedidos'
     | '/_authenticated/produtos'
     | '/loja/$slug'
+    | '/api/public/webhooks/sms-inbound'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -185,6 +222,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   LojaSlugRoute: typeof LojaSlugRoute
+  ApiPublicWebhooksSmsInboundRoute: typeof ApiPublicWebhooksSmsInboundRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -231,6 +269,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCategoriasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/checkout': {
+      id: '/_authenticated/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof AuthenticatedCheckoutRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/criar-loja': {
       id: '/_authenticated/criar-loja'
       path: '/criar-loja'
@@ -243,6 +288,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/djumbai-pay': {
+      id: '/_authenticated/djumbai-pay'
+      path: '/djumbai-pay'
+      fullPath: '/djumbai-pay'
+      preLoaderRoute: typeof AuthenticatedDjumbaiPayRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/estatisticas': {
@@ -280,14 +332,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LojaSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/sms-inbound': {
+      id: '/api/public/webhooks/sms-inbound'
+      path: '/api/public/webhooks/sms-inbound'
+      fullPath: '/api/public/webhooks/sms-inbound'
+      preLoaderRoute: typeof ApiPublicWebhooksSmsInboundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedCategoriasRoute: typeof AuthenticatedCategoriasRoute
+  AuthenticatedCheckoutRoute: typeof AuthenticatedCheckoutRoute
   AuthenticatedCriarLojaRoute: typeof AuthenticatedCriarLojaRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDjumbaiPayRoute: typeof AuthenticatedDjumbaiPayRoute
   AuthenticatedEstatisticasRoute: typeof AuthenticatedEstatisticasRoute
   AuthenticatedLojaRoute: typeof AuthenticatedLojaRoute
   AuthenticatedPedidosRoute: typeof AuthenticatedPedidosRoute
@@ -297,8 +358,10 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedCategoriasRoute: AuthenticatedCategoriasRoute,
+  AuthenticatedCheckoutRoute: AuthenticatedCheckoutRoute,
   AuthenticatedCriarLojaRoute: AuthenticatedCriarLojaRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDjumbaiPayRoute: AuthenticatedDjumbaiPayRoute,
   AuthenticatedEstatisticasRoute: AuthenticatedEstatisticasRoute,
   AuthenticatedLojaRoute: AuthenticatedLojaRoute,
   AuthenticatedPedidosRoute: AuthenticatedPedidosRoute,
@@ -314,17 +377,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   LojaSlugRoute: LojaSlugRoute,
+  ApiPublicWebhooksSmsInboundRoute: ApiPublicWebhooksSmsInboundRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
