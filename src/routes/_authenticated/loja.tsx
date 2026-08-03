@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Check, Loader2 } from "lucide-react";
@@ -14,6 +14,7 @@ export const Route = createFileRoute("/_authenticated/loja")({
 
 function StoreSettingsPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { data: store, isLoading } = useMyStore();
   const [saving, setSaving] = useState(false);
   const [pendingPlan, setPendingPlan] = useState<string | null>(null);
@@ -62,9 +63,11 @@ function StoreSettingsPage() {
   }
 
   async function changePlan(planId: string) {
-    // Planos pagos NÃO são ativados automaticamente — só a equipa confirma após pagamento.
+    // Planos pagos passam pelo Djumbai Pay: pagamento por Orange Money e
+    // ativação automática só depois da confirmação do SMS.
     if (planId !== "free") {
       setPendingPlan(planId);
+      navigate({ to: "/checkout", search: { plan: planId } });
       return;
     }
     const { error } = await supabase.from("stores").update({ plan: "free" }).eq("id", store!.id);
