@@ -22,6 +22,7 @@ import { Route as AuthenticatedLojaRouteImport } from './routes/_authenticated/l
 import { Route as AuthenticatedPedidosRouteImport } from './routes/_authenticated/pedidos'
 import { Route as AuthenticatedProdutosRouteImport } from './routes/_authenticated/produtos'
 import { Route as LojaSlugRouteImport } from './routes/loja.$slug'
+import { Route as ApiPublicWebhooksSmsInboundRouteImport } from './routes/api/public/webhooks/sms-inbound'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -88,6 +89,12 @@ const LojaSlugRoute = LojaSlugRouteImport.update({
   path: '/loja/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhooksSmsInboundRoute =
+  ApiPublicWebhooksSmsInboundRouteImport.update({
+    id: '/api/public/webhooks/sms-inbound',
+    path: '/api/public/webhooks/sms-inbound',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/produtos': typeof AuthenticatedProdutosRoute
   '/loja/$slug': typeof LojaSlugRoute
+  '/api/public/webhooks/sms-inbound': typeof ApiPublicWebhooksSmsInboundRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -116,6 +124,7 @@ export interface FileRoutesByTo {
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/produtos': typeof AuthenticatedProdutosRoute
   '/loja/$slug': typeof LojaSlugRoute
+  '/api/public/webhooks/sms-inbound': typeof ApiPublicWebhooksSmsInboundRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -132,6 +141,7 @@ export interface FileRoutesById {
   '/_authenticated/pedidos': typeof AuthenticatedPedidosRoute
   '/_authenticated/produtos': typeof AuthenticatedProdutosRoute
   '/loja/$slug': typeof LojaSlugRoute
+  '/api/public/webhooks/sms-inbound': typeof ApiPublicWebhooksSmsInboundRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/produtos'
     | '/loja/$slug'
+    | '/api/public/webhooks/sms-inbound'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/produtos'
     | '/loja/$slug'
+    | '/api/public/webhooks/sms-inbound'
   id:
     | '__root__'
     | '/'
@@ -177,6 +189,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pedidos'
     | '/_authenticated/produtos'
     | '/loja/$slug'
+    | '/api/public/webhooks/sms-inbound'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -185,6 +198,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   LojaSlugRoute: typeof LojaSlugRoute
+  ApiPublicWebhooksSmsInboundRoute: typeof ApiPublicWebhooksSmsInboundRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -280,6 +294,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LojaSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/sms-inbound': {
+      id: '/api/public/webhooks/sms-inbound'
+      path: '/api/public/webhooks/sms-inbound'
+      fullPath: '/api/public/webhooks/sms-inbound'
+      preLoaderRoute: typeof ApiPublicWebhooksSmsInboundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -314,6 +335,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   LojaSlugRoute: LojaSlugRoute,
+  ApiPublicWebhooksSmsInboundRoute: ApiPublicWebhooksSmsInboundRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
