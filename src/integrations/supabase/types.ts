@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          actor: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          from_state: string | null
+          id: string
+          metadata: Json
+          to_state: string | null
+        }
+        Insert: {
+          action: string
+          actor?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          from_state?: string | null
+          id?: string
+          metadata?: Json
+          to_state?: string | null
+        }
+        Update: {
+          action?: string
+          actor?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          from_state?: string | null
+          id?: string
+          metadata?: Json
+          to_state?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -45,6 +81,54 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fraud_signals: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          related_intent_id: string | null
+          related_tx_id: string | null
+          resolved: boolean
+          severity: string
+          signal_type: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          related_intent_id?: string | null
+          related_tx_id?: string | null
+          resolved?: boolean
+          severity?: string
+          signal_type: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          related_intent_id?: string | null
+          related_tx_id?: string | null
+          resolved?: boolean
+          severity?: string
+          signal_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fraud_signals_related_intent_id_fkey"
+            columns: ["related_intent_id"]
+            isOneToOne: false
+            referencedRelation: "payment_intents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fraud_signals_related_tx_id_fkey"
+            columns: ["related_tx_id"]
+            isOneToOne: false
+            referencedRelation: "provider_transactions"
             referencedColumns: ["id"]
           },
         ]
@@ -111,6 +195,231 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_history: {
+        Row: {
+          activation_status: string
+          amount: number
+          confirmed_at: string
+          confirmed_by: string
+          created_at: string
+          currency: string
+          id: string
+          notified_email: boolean
+          notified_whatsapp: boolean
+          payment_intent_id: string
+          provider_transaction_id: string | null
+          receipt_number: string
+          store_id: string
+        }
+        Insert: {
+          activation_status?: string
+          amount: number
+          confirmed_at?: string
+          confirmed_by?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          notified_email?: boolean
+          notified_whatsapp?: boolean
+          payment_intent_id: string
+          provider_transaction_id?: string | null
+          receipt_number: string
+          store_id: string
+        }
+        Update: {
+          activation_status?: string
+          amount?: number
+          confirmed_at?: string
+          confirmed_by?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          notified_email?: boolean
+          notified_whatsapp?: boolean
+          payment_intent_id?: string
+          provider_transaction_id?: string | null
+          receipt_number?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_history_payment_intent_id_fkey"
+            columns: ["payment_intent_id"]
+            isOneToOne: false
+            referencedRelation: "payment_intents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_history_provider_transaction_id_fkey"
+            columns: ["provider_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "provider_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_history_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_intents: {
+        Row: {
+          created_at: string
+          customer_identifier: string
+          customer_msisdn_hint: string | null
+          expected_amount: number
+          expected_currency: string
+          expires_at: string
+          id: string
+          matched_transaction_id: string | null
+          plan_id: string
+          provider_id: string
+          reference: string
+          review_reason: string | null
+          status: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_identifier?: string
+          customer_msisdn_hint?: string | null
+          expected_amount: number
+          expected_currency?: string
+          expires_at: string
+          id?: string
+          matched_transaction_id?: string | null
+          plan_id: string
+          provider_id: string
+          reference: string
+          review_reason?: string | null
+          status?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_identifier?: string
+          customer_msisdn_hint?: string | null
+          expected_amount?: number
+          expected_currency?: string
+          expires_at?: string
+          id?: string
+          matched_transaction_id?: string | null
+          plan_id?: string
+          provider_id?: string
+          reference?: string
+          review_reason?: string | null
+          status?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_intents_matched_tx_fkey"
+            columns: ["matched_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "provider_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "payment_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_providers: {
+        Row: {
+          config: Json
+          created_at: string
+          display_name: string
+          id: string
+          is_active: boolean
+          provider_code: string
+          provider_type: string
+          receiving_msisdn: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          display_name: string
+          id?: string
+          is_active?: boolean
+          provider_code: string
+          provider_type?: string
+          receiving_msisdn?: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_active?: boolean
+          provider_code?: string
+          provider_type?: string
+          receiving_msisdn?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      plans: {
+        Row: {
+          billing_period: string
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          price_amount: number
+          price_currency: string
+          updated_at: string
+        }
+        Insert: {
+          billing_period?: string
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          price_amount?: number
+          price_currency?: string
+          updated_at?: string
+        }
+        Update: {
+          billing_period?: string
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_amount?: number
+          price_currency?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       products: {
         Row: {
@@ -186,6 +495,112 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      provider_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          is_used: boolean
+          new_balance: number | null
+          provider_id: string
+          provider_transaction_id: string
+          raw_event_id: string
+          recipient_msisdn: string | null
+          sender_msisdn: string | null
+          transaction_date: string | null
+          transaction_time: string | null
+          used_by_intent_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          is_used?: boolean
+          new_balance?: number | null
+          provider_id: string
+          provider_transaction_id: string
+          raw_event_id: string
+          recipient_msisdn?: string | null
+          sender_msisdn?: string | null
+          transaction_date?: string | null
+          transaction_time?: string | null
+          used_by_intent_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          is_used?: boolean
+          new_balance?: number | null
+          provider_id?: string
+          provider_transaction_id?: string
+          raw_event_id?: string
+          recipient_msisdn?: string | null
+          sender_msisdn?: string | null
+          transaction_date?: string | null
+          transaction_time?: string | null
+          used_by_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_transactions_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "payment_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_transactions_raw_event_id_fkey"
+            columns: ["raw_event_id"]
+            isOneToOne: false
+            referencedRelation: "raw_sms_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_transactions_used_by_intent_id_fkey"
+            columns: ["used_by_intent_id"]
+            isOneToOne: false
+            referencedRelation: "payment_intents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raw_sms_events: {
+        Row: {
+          gateway_device_id: string
+          id: string
+          parse_error: string | null
+          processing_status: string
+          raw_body: string
+          received_at_device: string | null
+          received_at_server: string
+          sender_shortcode: string | null
+        }
+        Insert: {
+          gateway_device_id?: string
+          id?: string
+          parse_error?: string | null
+          processing_status?: string
+          raw_body: string
+          received_at_device?: string | null
+          received_at_server?: string
+          sender_shortcode?: string | null
+        }
+        Update: {
+          gateway_device_id?: string
+          id?: string
+          parse_error?: string | null
+          processing_status?: string
+          raw_body?: string
+          received_at_device?: string | null
+          received_at_server?: string
+          sender_shortcode?: string | null
+        }
+        Relationships: []
       }
       store_events: {
         Row: {
@@ -321,6 +736,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      djp_activate_intent: {
+        Args: { _actor?: string; _intent_id: string }
+        Returns: Json
+      }
+      djp_expire_intents: { Args: never; Returns: number }
+      djp_match_transaction: { Args: { _tx_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
