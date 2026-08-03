@@ -164,7 +164,8 @@ export function parseOrangeMoneySms(
 
   // Número remetente (opcional): "feito pelo 957151448" ou primeiro MSISDN 9 dígitos.
   const senderMatch =
-    /(?:feito\s+pel[oa]|de|do)\s+(\+?\d[\d ]{6,})/i.exec(text) ?? /\b(\d{9})\b/.exec(text);
+    /(?:feito\s+pel[oa]|remetente|de)\s+(\+?\d{8,15})\b/i.exec(text) ??
+    /\b(\d{9})\b/.exec(text);
   const senderMsisdn = senderMatch?.[1] ? senderMatch[1].replace(/\D/g, "") : null;
 
   const dt = dateTimeFromTransactionId(providerTransactionId);
