@@ -21,6 +21,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDjumbaiPayRouteImport } from './routes/_authenticated/djumbai-pay'
 import { Route as AuthenticatedEstatisticasRouteImport } from './routes/_authenticated/estatisticas'
 import { Route as AuthenticatedLojaRouteImport } from './routes/_authenticated/loja'
+import { Route as AuthenticatedPagamentosRouteImport } from './routes/_authenticated/pagamentos'
 import { Route as AuthenticatedPedidosRouteImport } from './routes/_authenticated/pedidos'
 import { Route as AuthenticatedProdutosRouteImport } from './routes/_authenticated/produtos'
 import { Route as LojaSlugRouteImport } from './routes/loja.$slug'
@@ -86,6 +87,11 @@ const AuthenticatedLojaRoute = AuthenticatedLojaRouteImport.update({
   path: '/loja',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPagamentosRoute = AuthenticatedPagamentosRouteImport.update({
+  id: '/pagamentos',
+  path: '/pagamentos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPedidosRoute = AuthenticatedPedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/djumbai-pay': typeof AuthenticatedDjumbaiPayRoute
   '/estatisticas': typeof AuthenticatedEstatisticasRoute
   '/loja': typeof AuthenticatedLojaRoute
+  '/pagamentos': typeof AuthenticatedPagamentosRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/produtos': typeof AuthenticatedProdutosRoute
   '/loja/$slug': typeof LojaSlugRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/djumbai-pay': typeof AuthenticatedDjumbaiPayRoute
   '/estatisticas': typeof AuthenticatedEstatisticasRoute
   '/loja': typeof AuthenticatedLojaRoute
+  '/pagamentos': typeof AuthenticatedPagamentosRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/produtos': typeof AuthenticatedProdutosRoute
   '/loja/$slug': typeof LojaSlugRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/_authenticated/djumbai-pay': typeof AuthenticatedDjumbaiPayRoute
   '/_authenticated/estatisticas': typeof AuthenticatedEstatisticasRoute
   '/_authenticated/loja': typeof AuthenticatedLojaRoute
+  '/_authenticated/pagamentos': typeof AuthenticatedPagamentosRoute
   '/_authenticated/pedidos': typeof AuthenticatedPedidosRoute
   '/_authenticated/produtos': typeof AuthenticatedProdutosRoute
   '/loja/$slug': typeof LojaSlugRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/djumbai-pay'
     | '/estatisticas'
     | '/loja'
+    | '/pagamentos'
     | '/pedidos'
     | '/produtos'
     | '/loja/$slug'
@@ -192,6 +202,7 @@ export interface FileRouteTypes {
     | '/djumbai-pay'
     | '/estatisticas'
     | '/loja'
+    | '/pagamentos'
     | '/pedidos'
     | '/produtos'
     | '/loja/$slug'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/_authenticated/djumbai-pay'
     | '/_authenticated/estatisticas'
     | '/_authenticated/loja'
+    | '/_authenticated/pagamentos'
     | '/_authenticated/pedidos'
     | '/_authenticated/produtos'
     | '/loja/$slug'
@@ -311,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLojaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pagamentos': {
+      id: '/_authenticated/pagamentos'
+      path: '/pagamentos'
+      fullPath: '/pagamentos'
+      preLoaderRoute: typeof AuthenticatedPagamentosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pedidos': {
       id: '/_authenticated/pedidos'
       path: '/pedidos'
@@ -351,6 +370,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDjumbaiPayRoute: typeof AuthenticatedDjumbaiPayRoute
   AuthenticatedEstatisticasRoute: typeof AuthenticatedEstatisticasRoute
   AuthenticatedLojaRoute: typeof AuthenticatedLojaRoute
+  AuthenticatedPagamentosRoute: typeof AuthenticatedPagamentosRoute
   AuthenticatedPedidosRoute: typeof AuthenticatedPedidosRoute
   AuthenticatedProdutosRoute: typeof AuthenticatedProdutosRoute
 }
@@ -364,6 +384,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDjumbaiPayRoute: AuthenticatedDjumbaiPayRoute,
   AuthenticatedEstatisticasRoute: AuthenticatedEstatisticasRoute,
   AuthenticatedLojaRoute: AuthenticatedLojaRoute,
+  AuthenticatedPagamentosRoute: AuthenticatedPagamentosRoute,
   AuthenticatedPedidosRoute: AuthenticatedPedidosRoute,
   AuthenticatedProdutosRoute: AuthenticatedProdutosRoute,
 }
