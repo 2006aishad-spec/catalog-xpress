@@ -385,68 +385,6 @@ export type Database = {
         }
         Relationships: []
       }
-      plan_requests: {
-        Row: {
-          admin_note: string | null
-          amount: number
-          contact_name: string
-          contact_phone: string
-          created_at: string
-          currency: string
-          id: string
-          plan_code: string
-          reference: string
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string
-          store_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          admin_note?: string | null
-          amount?: number
-          contact_name?: string
-          contact_phone?: string
-          created_at?: string
-          currency?: string
-          id?: string
-          plan_code: string
-          reference: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          store_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          admin_note?: string | null
-          amount?: number
-          contact_name?: string
-          contact_phone?: string
-          created_at?: string
-          currency?: string
-          id?: string
-          plan_code?: string
-          reference?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          store_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "plan_requests_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       plans: {
         Row: {
           billing_period: string
@@ -557,33 +495,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      profiles: {
-        Row: {
-          created_at: string
-          full_name: string
-          phone: string | null
-          phone_verified_at: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          full_name?: string
-          phone?: string | null
-          phone_verified_at?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          full_name?: string
-          phone?: string | null
-          phone_verified_at?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
       }
       provider_transactions: {
         Row: {
@@ -839,8 +750,6 @@ export type Database = {
         Returns: boolean
       }
       owns_store: { Args: { _store_id: string }; Returns: boolean }
-      plan_max_categories: { Args: { _plan: string }; Returns: number }
-      plan_max_products: { Args: { _plan: string }; Returns: number }
       store_is_published: { Args: { _store_id: string }; Returns: boolean }
     }
     Enums: {

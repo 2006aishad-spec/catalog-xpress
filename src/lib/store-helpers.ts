@@ -3,94 +3,54 @@ export type PlanId = "free" | "basic" | "pro";
 export type Plan = {
   id: PlanId;
   name: string;
-  /** Preço formatado com separador de milhares (sem moeda). */
   price: string;
-  priceAmount: number;
   note: string;
   maxProducts: number;
   maxCategories: number;
   analytics: string;
   branding: string;
+  autoMessages: boolean;
   support: string;
-  /** Funcionalidades oficiais mostradas na landing, no dashboard e no checkout. */
-  features: string[];
 };
 
-/**
- * FONTE ÚNICA DE VERDADE DOS PLANOS.
- * Estes valores têm de ser iguais aos limites aplicados na base de dados
- * (funções plan_max_products / plan_max_categories).
- */
 export const PLANS: Record<PlanId, Plan> = {
   free: {
     id: "free",
     name: "Grátis",
     price: "0",
-    priceAmount: 0,
     note: "para começar hoje",
     maxProducts: 10,
-    maxCategories: 2,
-    analytics: "Estatísticas básicas",
-    branding: "Marca Djumbai Shop visível",
-    support: "Suporte normal",
-    features: [
-      "10 produtos",
-      "2 categorias",
-      "Link público da loja",
-      'Botão "Comprar no WhatsApp"',
-      "Marca Djumbai Shop visível",
-      "Estatísticas básicas",
-    ],
+    maxCategories: 3,
+    analytics: "Básicas",
+    branding: "Marca Djumbai visível",
+    autoMessages: false,
+    support: "Normal",
   },
   basic: {
     id: "basic",
     name: "Básico",
     price: "3.500",
-    priceAmount: 3500,
     note: "por mês",
-    maxProducts: 60,
-    maxCategories: 30,
-    analytics: "Estatísticas essenciais",
-    branding: "Marca Djumbai Shop visível",
-    support: "Suporte normal",
-    features: [
-      "60 produtos",
-      "30 categorias",
-      "Logo da loja",
-      "Cor personalizada",
-      "Registo de pedidos",
-      "Estatísticas essenciais",
-    ],
+    maxProducts: 50,
+    maxCategories: 10,
+    analytics: "Detalhadas",
+    branding: "Marca opcional",
+    autoMessages: true,
+    support: "Prioritário",
   },
   pro: {
     id: "pro",
     name: "Profissional",
     price: "7.900",
-    priceAmount: 7900,
     note: "por mês",
     maxProducts: Number.POSITIVE_INFINITY,
     maxCategories: Number.POSITIVE_INFINITY,
-    analytics: "Relatórios avançados",
-    branding: "Sem marca Djumbai Shop",
-    support: "Suporte prioritário",
-    features: [
-      "Produtos ilimitados",
-      "Categorias ilimitadas",
-      "Sem marca Djumbai Shop",
-      "Personalização completa do catálogo",
-      "Banner e logo personalizados",
-      "Cores personalizadas",
-      "Relatórios avançados",
-      "Destaque de produtos",
-      "Suporte prioritário",
-    ],
+    analytics: "Avançadas",
+    branding: "Sem marca Djumbai",
+    autoMessages: true,
+    support: "Prioritário",
   },
 };
-
-export const PLAN_ORDER: PlanId[] = ["free", "basic", "pro"];
-
-/** Número de WhatsApp da equipa Djumbai Shop (pagamento manual e suporte). */
-export const TEAM_WHATSAPP = "955469148";
 
 export function planOf(plan: string | null | undefined): Plan {
   return PLANS[(plan as PlanId) ?? "free"] ?? PLANS.free;
@@ -118,46 +78,6 @@ export function onlyDigits(value: string) {
   return value.replace(/\D/g, "");
 }
 
-// ---------------------------------------------------------------- telemóvel
-/**
- * Normaliza um número da Guiné-Bissau para 9 dígitos locais.
- * Aceita "+245 955 469 148", "00245955469148" ou "955469148".
- * Devolve null quando o número não é válido.
- *
- * Testes:
- *  normalizePhone("955469148")      -> "955469148"
- *  normalizePhone("+245 955469148") -> "955469148"
- *  normalizePhone("00245955469148") -> "955469148"
- *  normalizePhone("12345")          -> null
- */
-export function normalizePhone(value: string): string | null {
-  let digits = onlyDigits(value);
-  if (digits.startsWith("00245")) digits = digits.slice(5);
-  else if (digits.startsWith("245") && digits.length > 9) digits = digits.slice(3);
-  if (digits.length !== 9) return null;
-  if (!/^[5-7,9]/.test(digits[0] ?? "")) {
-    // Guiné-Bissau usa prefixos 9x / 5x / 6x / 7x. Mantemos permissivo mas com limite de tamanho.
-    return /^[0-9]{9}$/.test(digits) ? digits : null;
-  }
-  return digits;
-}
-
-/**
- * Credencial interna: o telemóvel é o identificador da conta, mas o serviço de
- * autenticação exige um email. Derivamos um email determinístico interno que
- * nunca é mostrado ao lojista nem recebe mensagens.
- */
-export function phoneToAuthEmail(phone: string) {
-  return `${phone}@telefone.djumbaishop.app`;
-}
-
-export const PHONE_AUTH_DOMAIN = "telefone.djumbaishop.app";
-
-export function isPhoneAuthEmail(email: string | null | undefined) {
-  return !!email && email.endsWith(`@${PHONE_AUTH_DOMAIN}`);
-}
-
-// ---------------------------------------------------------------- catálogo
 export type Availability = "available" | "low" | "out" | "on_request";
 
 export function availabilityOf(stock: number | null): Availability {
@@ -202,33 +122,13 @@ export function buildWhatsappMessage(input: WhatsappOrderInput) {
     `Produto: ${input.productName}`,
     `Preço: ${formatPrice(input.price, input.currency)}`,
   ];
-  if (input.sku) lines.push(`Referência: ${input.sku}`);
+  if (input.sku) lines.push(`Código: ${input.sku}`);
   if (input.size) lines.push(`Tamanho: ${input.size}`);
   if (input.color) lines.push(`Cor: ${input.color}`);
   if (input.quantity && input.quantity > 1) lines.push(`Quantidade: ${input.quantity}`);
   if (input.customerName) lines.push(`Nome: ${input.customerName}`);
   lines.push("", "Ainda está disponível?");
   return lines.join("\n");
-}
-
-/** Mensagem pré-preenchida para a equipa Djumbai Shop (pagamento manual). */
-export function buildPlanRequestMessage(input: {
-  customerName: string;
-  storeName: string;
-  planName: string;
-  amount: number;
-  currency: string;
-  reference: string;
-}) {
-  return [
-    `Olá, quero ativar o plano ${input.planName} do Djumbai Shop.`,
-    "",
-    `Nome: ${input.customerName || "—"}`,
-    `Loja: ${input.storeName}`,
-    `Plano: ${input.planName}`,
-    `Valor: ${formatPrice(input.amount, input.currency)}`,
-    `Referência: ${input.reference}`,
-  ].join("\n");
 }
 
 export function whatsappUrl(number: string, message: string) {
@@ -239,10 +139,3 @@ export function deviceType() {
   if (typeof navigator === "undefined") return "unknown";
   return /Mobi|Android|iPhone/i.test(navigator.userAgent) ? "mobile" : "desktop";
 }
-
-export const PAYMENT_STATUS_LABEL: Record<string, string> = {
-  pending: "Aguarda contacto",
-  under_review: "Em análise",
-  active: "Ativo",
-  rejected: "Rejeitado",
-};

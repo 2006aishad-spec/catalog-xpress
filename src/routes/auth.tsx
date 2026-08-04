@@ -1,11 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Loader2, Mail, Phone, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Loader2, Mail, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
-import { TEAM_WHATSAPP, normalizePhone, phoneToAuthEmail, whatsappUrl } from "@/lib/store-helpers";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: z.object({
@@ -19,34 +18,29 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Cria a tua conta Djumbai Shop com o teu número de telemóvel e publica o catálogo da tua loja em minutos.",
+          "Cria a tua conta Djumbai Shop e publica o catálogo da tua loja com vendas pelo WhatsApp.",
       },
       { property: "og:title", content: "Entrar no Djumbai Shop" },
       {
         property: "og:description",
-        content: "Acede ao painel da tua loja, gere produtos e recebe pedidos pelo WhatsApp.",
+        content: "Acede ao painel da tua loja, gere produtos e recebe encomendas pelo WhatsApp.",
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthPage,
 });
 
 type Mode = "signin" | "signup" | "forgot";
-type Method = "phone" | "email";
 
 function AuthPage() {
   const { redirect, mode: initialMode, plan } = Route.useSearch();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>(initialMode ?? "signin");
-  const [method, setMethod] = useState<Method>("phone");
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [sent, setSent] = useState<"confirm" | "reset" | null>(null);
 
   const safeRedirect = redirect && redirect.startsWith("/") ? redirect : "/dashboard";
 
@@ -54,68 +48,34 @@ function AuthPage() {
     event.preventDefault();
     setLoading(true);
     try {
-      // Recuperação de senha (só disponível para contas com email).
-      if (mode === "forgot") {
+      if (mode === "signin") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast.success("Bem-vindo de volta!");
+        navigate({ to: safeRedirect });
+      } else if (mode === "signup") {
+        if (password.length < 6) throw new Error("A senha precisa de pelo menos 6 caracteres.");
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+            data: { full_name: name },
+          },
+        });
+        if (error) throw error;
+        if (data.session) {
+          navigate({ to: "/criar-loja", search: plan ? { plan } : {} });
+        } else {
+          setSent("confirm");
+        }
+      } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
-        setSent(true);
-        return;
+        setSent("reset");
       }
-
-      let loginEmail = email.trim();
-      if (method === "phone") {
-        const normalized = normalizePhone(phone);
-        if (!normalized) {
-          throw new Error("Escreve um número de telemóvel válido (9 dígitos).");
-        }
-        loginEmail = phoneToAuthEmail(normalized);
-      }
-
-      if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: loginEmail,
-          password,
-        });
-        if (error) throw error;
-        toast.success("Bem-vindo de volta!");
-        navigate({ to: safeRedirect });
-        return;
-      }
-
-      // Criar conta
-      if (password.length < 6) throw new Error("A senha precisa de pelo menos 6 caracteres.");
-      if (!name.trim()) throw new Error("Escreve o teu nome.");
-      const normalizedPhone = method === "phone" ? normalizePhone(phone) : null;
-
-      const { data, error } = await supabase.auth.signUp({
-        email: loginEmail,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: { full_name: name.trim(), phone: normalizedPhone },
-        },
-      });
-      if (error) throw error;
-
-      if (!data.session) {
-        setSent(true);
-        return;
-      }
-
-      // Guardar nome e telemóvel no perfil (o telemóvel é o identificador da conta).
-      const { error: profileError } = await supabase.from("profiles").insert({
-        user_id: data.session.user.id,
-        full_name: name.trim(),
-        phone: normalizedPhone,
-      });
-      if (profileError && !/duplicate key/i.test(profileError.message)) {
-        // Perfil é importante mas não deve bloquear a entrada.
-        console.warn("perfil não guardado", profileError.message);
-      }
-
-      navigate({ to: "/criar-loja", search: plan ? { plan } : {} });
     } catch (error) {
       toast.error(translateError(error));
     } finally {
@@ -148,20 +108,24 @@ function AuthPage() {
 
       <div className="glass-panel w-full max-w-md rounded-3xl p-7">
         <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary/15 text-primary glow-ring">
-          <ShoppingBag className="h-5 w-5" />
+          <Sparkles className="h-5 w-5" />
         </span>
 
         {sent ? (
           <div className="mt-6">
-            <h1 className="text-2xl font-bold">Verifica o teu email</h1>
+            <h1 className="text-2xl font-bold">
+              {sent === "confirm" ? "Confirma o teu email" : "Verifica o teu email"}
+            </h1>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Enviámos uma mensagem para <span className="text-foreground">{email}</span>. Toca no
-              link para continuar.
+              Enviámos uma mensagem para <span className="text-foreground">{email}</span>.{" "}
+              {sent === "confirm"
+                ? "Toca no link para ativar a conta e criar a tua loja."
+                : "Toca no link para definir uma nova senha."}
             </p>
             <button
               type="button"
               onClick={() => {
-                setSent(false);
+                setSent(null);
                 setMode("signin");
               }}
               className="mt-6 inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:bg-secondary/60"
@@ -180,34 +144,11 @@ function AuthPage() {
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
               {mode === "forgot"
-                ? "Escreve o email da conta e enviamos um link para definir nova senha."
-                : "O teu número de telemóvel é o teu acesso. Não é preciso cartão de crédito."}
+                ? "Escreve o teu email e enviamos um link para definir nova senha."
+                : "Catálogo online e encomendas no WhatsApp, sem cartão de crédito."}
             </p>
 
-            {mode !== "forgot" ? (
-              <div className="mt-5 grid grid-cols-2 gap-2 rounded-xl border border-border p-1">
-                <button
-                  type="button"
-                  onClick={() => setMethod("phone")}
-                  className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${
-                    method === "phone" ? "bg-primary/15 text-primary" : "text-muted-foreground"
-                  }`}
-                >
-                  <Phone className="h-4 w-4" /> Telemóvel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMethod("email")}
-                  className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${
-                    method === "email" ? "bg-primary/15 text-primary" : "text-muted-foreground"
-                  }`}
-                >
-                  <Mail className="h-4 w-4" /> Email
-                </button>
-              </div>
-            ) : null}
-
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               {mode === "signup" ? (
                 <Field label="O teu nome">
                   <input
@@ -216,41 +157,22 @@ function AuthPage() {
                     required
                     maxLength={80}
                     placeholder="Ex.: Aida Sanhá"
-                    className={inputClass}
+                    className="w-full rounded-xl border border-input bg-surface/60 px-4 py-3 text-sm outline-none focus:border-primary/60"
                   />
                 </Field>
               ) : null}
 
-              {mode !== "forgot" && method === "phone" ? (
-                <Field label="Número de telemóvel">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-xl border border-input bg-surface/60 px-3 py-3 text-sm text-muted-foreground">
-                      +245
-                    </span>
-                    <input
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      required
-                      inputMode="tel"
-                      maxLength={20}
-                      placeholder="955 469 148"
-                      className={inputClass}
-                    />
-                  </div>
-                </Field>
-              ) : (
-                <Field label="Email">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    maxLength={160}
-                    placeholder="nome@email.com"
-                    className={inputClass}
-                  />
-                </Field>
-              )}
+              <Field label="Email">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  maxLength={160}
+                  placeholder="nome@email.com"
+                  className="w-full rounded-xl border border-input bg-surface/60 px-4 py-3 text-sm outline-none focus:border-primary/60"
+                />
+              </Field>
 
               {mode !== "forgot" ? (
                 <Field label="Senha">
@@ -262,7 +184,7 @@ function AuthPage() {
                     minLength={6}
                     maxLength={72}
                     placeholder="Pelo menos 6 caracteres"
-                    className={inputClass}
+                    className="w-full rounded-xl border border-input bg-surface/60 px-4 py-3 text-sm outline-none focus:border-primary/60"
                   />
                 </Field>
               ) : null}
@@ -284,8 +206,7 @@ function AuthPage() {
             {mode !== "forgot" ? (
               <>
                 <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-                  <span className="h-px flex-1 bg-border" /> ou{" "}
-                  <span className="h-px flex-1 bg-border" />
+                  <span className="h-px flex-1 bg-border" /> ou <span className="h-px flex-1 bg-border" />
                 </div>
                 <button
                   type="button"
@@ -313,27 +234,13 @@ function AuthPage() {
                   </p>
                   <p>
                     Esqueceste a senha?{" "}
-                    {method === "email" ? (
-                      <button
-                        type="button"
-                        onClick={() => setMode("forgot")}
-                        className="font-medium text-primary hover:underline"
-                      >
-                        Recuperar por email
-                      </button>
-                    ) : (
-                      <a
-                        href={whatsappUrl(
-                          TEAM_WHATSAPP,
-                          "Olá Djumbai Shop, esqueci a senha da minha conta.",
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-primary hover:underline"
-                      >
-                        Fala com a equipa no WhatsApp
-                      </a>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => setMode("forgot")}
+                      className="font-medium text-primary hover:underline"
+                    >
+                      Recuperar acesso
+                    </button>
                   </p>
                 </>
               ) : (
@@ -356,9 +263,6 @@ function AuthPage() {
   );
 }
 
-const inputClass =
-  "w-full rounded-xl border border-input bg-surface/60 px-4 py-3 text-sm outline-none focus:border-primary/60";
-
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
@@ -370,13 +274,10 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function translateError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
-  if (/Invalid login credentials/i.test(message))
-    return "Número/email ou senha incorretos. Verifica e tenta outra vez.";
-  if (/already registered|already exists|duplicate/i.test(message))
-    return "Já existe uma conta com estes dados. Tenta entrar.";
+  if (/Invalid login credentials/i.test(message)) return "Email ou senha incorretos.";
+  if (/already registered|already exists/i.test(message))
+    return "Este email já tem conta. Tenta entrar.";
   if (/Email not confirmed/i.test(message)) return "Confirma o teu email antes de entrar.";
   if (/rate limit|too many/i.test(message)) return "Muitas tentativas. Espera um momento.";
-  if (/password/i.test(message) && /weak|short|pwned|compromised/i.test(message))
-    return "Escolhe uma senha mais forte (evita senhas comuns).";
   return message;
 }
