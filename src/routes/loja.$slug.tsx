@@ -27,6 +27,7 @@ import {
   planOf,
   whatsappUrl,
 } from "@/lib/store-helpers";
+import { useMyStore } from "@/hooks/use-store-data";
 
 export const Route = createFileRoute("/loja/$slug")({
   loader: async ({ params }) => {
