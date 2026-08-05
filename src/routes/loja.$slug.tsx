@@ -79,7 +79,10 @@ function CatalogFallback() {
 function StoreCatalog() {
   const catalog = Route.useLoaderData() as NonNullable<PublicCatalog>;
   const { store, categories, products: allProducts } = catalog;
+  const { data: myStore } = useMyStore();
+  const isOwner = !!myStore && myStore.id === store.id;
   const [query, setQuery] = useState("");
+
   const [category, setCategory] = useState<string>("all");
 
   useEffect(() => {
