@@ -281,22 +281,6 @@ function AuthPage() {
               </button>
             </form>
 
-            {mode !== "forgot" ? (
-              <>
-                <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-                  <span className="h-px flex-1 bg-border" /> ou{" "}
-                  <span className="h-px flex-1 bg-border" />
-                </div>
-                <button
-                  type="button"
-                  onClick={handleGoogle}
-                  disabled={loading}
-                  className="w-full rounded-xl border border-border bg-secondary/50 px-5 py-3 text-sm font-semibold transition-colors hover:bg-secondary disabled:opacity-60"
-                >
-                  Continuar com Google
-                </button>
-              </>
-            ) : null}
 
             <div className="mt-6 space-y-2 text-sm text-muted-foreground">
               {mode === "signin" ? (
