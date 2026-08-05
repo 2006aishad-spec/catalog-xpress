@@ -123,19 +123,8 @@ function AuthPage() {
     }
   }
 
-  async function handleGoogle() {
-    setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      setLoading(false);
-      toast.error("Não foi possível entrar com o Google. Tenta outra vez.");
-      return;
-    }
-    if (result.redirected) return;
-    navigate({ to: safeRedirect });
-  }
+  // Login com Google desativado por decisão de produto (apenas telemóvel/email).
+
 
   return (
     <main className="hero-aura flex min-h-screen flex-col items-center justify-center px-5 py-12">
