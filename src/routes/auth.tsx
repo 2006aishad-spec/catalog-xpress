@@ -4,7 +4,6 @@ import { ArrowLeft, Loader2, Mail, Phone, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { TEAM_WHATSAPP, normalizePhone, phoneToAuthEmail, whatsappUrl } from "@/lib/store-helpers";
 
 export const Route = createFileRoute("/auth")({
@@ -123,19 +122,8 @@ function AuthPage() {
     }
   }
 
-  async function handleGoogle() {
-    setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      setLoading(false);
-      toast.error("Não foi possível entrar com o Google. Tenta outra vez.");
-      return;
-    }
-    if (result.redirected) return;
-    navigate({ to: safeRedirect });
-  }
+  // Login com Google desativado por decisão de produto (apenas telemóvel/email).
+
 
   return (
     <main className="hero-aura flex min-h-screen flex-col items-center justify-center px-5 py-12">
@@ -281,22 +269,6 @@ function AuthPage() {
               </button>
             </form>
 
-            {mode !== "forgot" ? (
-              <>
-                <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-                  <span className="h-px flex-1 bg-border" /> ou{" "}
-                  <span className="h-px flex-1 bg-border" />
-                </div>
-                <button
-                  type="button"
-                  onClick={handleGoogle}
-                  disabled={loading}
-                  className="w-full rounded-xl border border-border bg-secondary/50 px-5 py-3 text-sm font-semibold transition-colors hover:bg-secondary disabled:opacity-60"
-                >
-                  Continuar com Google
-                </button>
-              </>
-            ) : null}
 
             <div className="mt-6 space-y-2 text-sm text-muted-foreground">
               {mode === "signin" ? (

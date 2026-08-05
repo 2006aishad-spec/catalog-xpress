@@ -27,6 +27,7 @@ import {
   planOf,
   whatsappUrl,
 } from "@/lib/store-helpers";
+import { useMyStore } from "@/hooks/use-store-data";
 
 export const Route = createFileRoute("/loja/$slug")({
   loader: async ({ params }) => {
@@ -79,7 +80,10 @@ function CatalogFallback() {
 function StoreCatalog() {
   const catalog = Route.useLoaderData() as NonNullable<PublicCatalog>;
   const { store, categories, products: allProducts } = catalog;
+  const { data: myStore } = useMyStore();
+  const isOwner = !!myStore && myStore.id === store.id;
   const [query, setQuery] = useState("");
+
   const [category, setCategory] = useState<string>("all");
 
   useEffect(() => {
@@ -138,15 +142,39 @@ function StoreCatalog() {
 
   return (
     <main className="min-h-screen pb-16">
+      {isOwner ? (
+        <div className="border-b border-primary/30 bg-primary/10 px-5 py-2.5">
+          <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 text-xs">
+            <span className="font-medium text-primary">
+              Estás a ver a tua loja como um cliente a vê.
+            </span>
+            <div className="flex gap-2">
+              <Link
+                to="/produtos"
+                className="rounded-lg bg-primary px-3 py-1.5 font-semibold text-primary-foreground"
+              >
+                Editar produtos
+              </Link>
+              <Link
+                to="/dashboard"
+                className="rounded-lg border border-primary/40 px-3 py-1.5 font-semibold text-primary"
+              >
+                Painel
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <section className="hero-aura relative border-b border-border/60 px-5 pb-8 pt-6">
         <div className="mx-auto max-w-4xl">
           <div className="flex items-center justify-between gap-3">
             <Link
-              to="/"
+              to={isOwner ? "/dashboard" : "/"}
               className="inline-flex items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
-              <ArrowLeft className="h-3.5 w-3.5" /> Djumbai Shop
+              <ArrowLeft className="h-3.5 w-3.5" /> {isOwner ? "Voltar ao painel" : "Djumbai Shop"}
             </Link>
+
             <button
               type="button"
               onClick={share}
