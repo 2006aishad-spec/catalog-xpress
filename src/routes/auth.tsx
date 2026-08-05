@@ -4,7 +4,6 @@ import { ArrowLeft, Loader2, Mail, Phone, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { TEAM_WHATSAPP, normalizePhone, phoneToAuthEmail, whatsappUrl } from "@/lib/store-helpers";
 
 export const Route = createFileRoute("/auth")({
