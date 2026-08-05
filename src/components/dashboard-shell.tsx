@@ -99,11 +99,11 @@ export function DashboardShell({
           ) : null}
           {isAdmin ? (
             <Link
-              to="/djumbai-pay"
+              to="/pagamentos"
               activeProps={{ className: "bg-primary/15 text-primary" }}
               className="inline-flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              <ShieldCheck className="h-4 w-4" /> Djumbai Pay
+              <ShieldCheck className="h-4 w-4" /> Pagamentos
             </Link>
           ) : null}
         </nav>
