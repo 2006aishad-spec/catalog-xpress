@@ -74,6 +74,7 @@ function CheckoutPage() {
       toast.success("Pedido registado. Agora fala com a equipa no WhatsApp para pagar.");
       const message = buildPlanRequestMessage({
         customerName: contactName,
+        storeId: store!.id,
         storeName: store!.name,
         planName: PLANS[selected].name,
         amount: PLANS[selected].priceAmount,
@@ -143,6 +144,7 @@ function CheckoutPage() {
               TEAM_WHATSAPP,
               buildPlanRequestMessage({
                 customerName: openRequest.contact_name,
+                storeId: store.id,
                 storeName: store.name,
                 planName: planOf(openRequest.plan_code).name,
                 amount: Number(openRequest.amount),

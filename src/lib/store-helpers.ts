@@ -36,10 +36,10 @@ export const PLANS: Record<PlanId, Plan> = {
     features: [
       "10 produtos",
       "2 categorias",
+      "Catálogo online",
       "Link público da loja",
       'Botão "Comprar no WhatsApp"',
-      "Marca Djumbai Shop visível",
-      "Estatísticas básicas",
+      "Partilhar catálogo",
     ],
   },
   basic: {
@@ -50,16 +50,15 @@ export const PLANS: Record<PlanId, Plan> = {
     note: "por mês",
     maxProducts: 60,
     maxCategories: 30,
-    analytics: "Estatísticas essenciais",
+    analytics: "Estatísticas básicas",
     branding: "Marca Djumbai Shop visível",
     support: "Suporte normal",
     features: [
       "60 produtos",
       "30 categorias",
       "Logo da loja",
-      "Cor personalizada",
       "Registo de pedidos",
-      "Estatísticas essenciais",
+      "Estatísticas básicas",
     ],
   },
   pro: {
@@ -71,26 +70,24 @@ export const PLANS: Record<PlanId, Plan> = {
     maxProducts: Number.POSITIVE_INFINITY,
     maxCategories: Number.POSITIVE_INFINITY,
     analytics: "Relatórios avançados",
-    branding: "Sem marca Djumbai Shop",
+    branding: "Sem marca Djumbai",
     support: "Suporte prioritário",
     features: [
       "Produtos ilimitados",
       "Categorias ilimitadas",
-      "Sem marca Djumbai Shop",
       "Personalização completa do catálogo",
-      "Banner e logo personalizados",
-      "Cores personalizadas",
+      "Sem marca Djumbai Shop",
       "Relatórios avançados",
-      "Destaque de produtos",
       "Suporte prioritário",
     ],
   },
 };
 
+
 export const PLAN_ORDER: PlanId[] = ["free", "basic", "pro"];
 
 /** Número de WhatsApp da equipa Djumbai Shop (pagamento manual e suporte). */
-export const TEAM_WHATSAPP = "955469148";
+export const TEAM_WHATSAPP = "245955469148";
 
 export function planOf(plan: string | null | undefined): Plan {
   return PLANS[(plan as PlanId) ?? "free"] ?? PLANS.free;
@@ -118,11 +115,10 @@ export function onlyDigits(value: string) {
   return value.replace(/\D/g, "");
 }
 
-// ---------------------------------------------------------------- telemóvel
+// ------------------------------------------- telemóvel (dados de negócio)
 /**
  * Normaliza um número da Guiné-Bissau para 9 dígitos locais.
- * Aceita "+245 955 469 148", "00245955469148" ou "955469148".
- * Devolve null quando o número não é válido.
+ * Usado apenas para o WhatsApp da loja — NÃO é um método de autenticação.
  *
  * Testes:
  *  normalizePhone("955469148")      -> "955469148"
@@ -135,27 +131,9 @@ export function normalizePhone(value: string): string | null {
   if (digits.startsWith("00245")) digits = digits.slice(5);
   else if (digits.startsWith("245") && digits.length > 9) digits = digits.slice(3);
   if (digits.length !== 9) return null;
-  if (!/^[5-7,9]/.test(digits[0] ?? "")) {
-    // Guiné-Bissau usa prefixos 9x / 5x / 6x / 7x. Mantemos permissivo mas com limite de tamanho.
-    return /^[0-9]{9}$/.test(digits) ? digits : null;
-  }
-  return digits;
+  return /^[0-9]{9}$/.test(digits) ? digits : null;
 }
 
-/**
- * Credencial interna: o telemóvel é o identificador da conta, mas o serviço de
- * autenticação exige um email. Derivamos um email determinístico interno que
- * nunca é mostrado ao lojista nem recebe mensagens.
- */
-export function phoneToAuthEmail(phone: string) {
-  return `${phone}@telefone.djumbaishop.app`;
-}
-
-export const PHONE_AUTH_DOMAIN = "telefone.djumbaishop.app";
-
-export function isPhoneAuthEmail(email: string | null | undefined) {
-  return !!email && email.endsWith(`@${PHONE_AUTH_DOMAIN}`);
-}
 
 // ---------------------------------------------------------------- catálogo
 export type Availability = "available" | "low" | "out" | "on_request";
@@ -214,6 +192,7 @@ export function buildWhatsappMessage(input: WhatsappOrderInput) {
 /** Mensagem pré-preenchida para a equipa Djumbai Shop (pagamento manual). */
 export function buildPlanRequestMessage(input: {
   customerName: string;
+  storeId?: string;
   storeName: string;
   planName: string;
   amount: number;
@@ -221,15 +200,17 @@ export function buildPlanRequestMessage(input: {
   reference: string;
 }) {
   return [
-    `Olá, quero ativar o plano ${input.planName} do Djumbai Shop.`,
-    "",
-    `Nome: ${input.customerName || "—"}`,
-    `Loja: ${input.storeName}`,
-    `Plano: ${input.planName}`,
+    "Olá.",
+    `Pretendo adquirir o plano ${input.planName}.`,
+    `Código da Loja: ${input.storeId ?? "—"}`,
+    `Nome da Loja: ${input.storeName}`,
     `Valor: ${formatPrice(input.amount, input.currency)}`,
     `Referência: ${input.reference}`,
+    `Contacto: ${input.customerName || "—"}`,
+    "Aguardo instruções para pagamento.",
   ].join("\n");
 }
+
 
 export function whatsappUrl(number: string, message: string) {
   return `https://wa.me/${onlyDigits(number)}?text=${encodeURIComponent(message)}`;

@@ -8,7 +8,6 @@ import {
   Palette,
   ShieldCheck,
   Smartphone,
-  Sparkles,
   Store,
   Zap,
 } from "lucide-react";
@@ -19,7 +18,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import heroCatalog from "@/assets/hero-catalog.jpg";
+import { BrandLogo } from "@/components/brand-logo";
+import { PLANS } from "@/lib/store-helpers";
 import { useSession } from "@/hooks/use-session";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -80,45 +82,13 @@ const steps = [
   { n: "03", title: "Partilha o link", text: "Recebe encomendas e acompanha os resultados." },
 ];
 
+// Fonte única de verdade dos planos: src/lib/store-helpers.ts
 const plans = [
-  {
-    name: "Grátis",
-    price: "0",
-    note: "para começar hoje",
-    features: ["10 produtos", "2 categorias", "Link do catálogo", "Botão WhatsApp"],
-    cta: "Começar grátis",
-    planId: "free",
-  },
-  {
-    name: "Básico",
-    price: "3.500",
-    note: "por mês",
-    features: [
-      "100 produtos",
-      "Categorias ilimitadas",
-      "Cor e logo personalizados",
-      "Registo de pedidos",
-      "Estatísticas essenciais",
-    ],
-    cta: "Escolher Básico",
-    planId: "basic",
-    highlight: true,
-  },
-  {
-    name: "Profissional",
-    price: "7.900",
-    note: "por mês",
-    features: [
-      "Produtos ilimitados",
-      "Sem marca Djumbai",
-      "Relatórios avançados",
-      "Mensagens automáticas",
-      "Suporte prioritário",
-    ],
-    cta: "Escolher Pro",
-    planId: "pro",
-  },
+  { ...PLANS.free, cta: "Começar grátis", planId: "free" as const, highlight: false },
+  { ...PLANS.basic, cta: "Escolher Básico", planId: "basic" as const, highlight: true },
+  { ...PLANS.pro, cta: "Escolher Pro", planId: "pro" as const, highlight: false },
 ];
+
 
 const testimonials = [
   {
@@ -165,9 +135,7 @@ function Landing() {
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 py-4">
           <Link to="/" className="flex min-w-0 items-center gap-2">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary glow-ring">
-              <Sparkles className="h-4 w-4" />
-            </span>
+            <BrandLogo variant="mark" height={36} priority />
             <span className="truncate font-display text-lg font-semibold">Djumbai Shop</span>
           </Link>
           <nav className="flex items-center gap-2">
@@ -438,7 +406,7 @@ function Landing() {
 
       <footer className="border-t border-border/60 px-5 py-10">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span className="font-display font-semibold text-foreground">Djumbai Shop</span>
+          <BrandLogo height={60} />
           <span>© {new Date().getFullYear()} Djumbai Shop. Feito para negócios locais.</span>
         </div>
       </footer>

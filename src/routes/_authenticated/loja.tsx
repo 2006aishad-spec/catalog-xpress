@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardShell, NoStoreState } from "@/components/dashboard-shell";
 import { useMyStore } from "@/hooks/use-store-data";
-import { PLANS, limitLabel, onlyDigits, planOf } from "@/lib/store-helpers";
+import { PLANS, type PlanId, limitLabel, onlyDigits, planOf } from "@/lib/store-helpers";
 
 export const Route = createFileRoute("/_authenticated/loja")({
   component: StoreSettingsPage,
@@ -17,7 +17,7 @@ function StoreSettingsPage() {
   const navigate = useNavigate();
   const { data: store, isLoading } = useMyStore();
   const [saving, setSaving] = useState(false);
-  const [pendingPlan, setPendingPlan] = useState<string | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<PlanId | null>(null);
 
 
   if (isLoading) {
@@ -62,9 +62,9 @@ function StoreSettingsPage() {
     queryClient.invalidateQueries({ queryKey: ["my-store"] });
   }
 
-  async function changePlan(planId: string) {
-    // Planos pagos passam pelo Djumbai Pay: pagamento por Orange Money e
-    // ativação automática só depois da confirmação do SMS.
+  async function changePlan(planId: PlanId) {
+    // Planos pagos: pedido registado + pagamento manual confirmado pela equipa no WhatsApp.
+    // Nunca há ativação automática.
     if (planId !== "free") {
       setPendingPlan(planId);
       navigate({ to: "/checkout", search: { plan: planId } });

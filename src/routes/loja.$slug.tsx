@@ -1,5 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+
 import {
   ArrowLeft,
   MapPin,
@@ -27,7 +30,8 @@ import {
   planOf,
   whatsappUrl,
 } from "@/lib/store-helpers";
-import { useMyStore } from "@/hooks/use-store-data";
+import { amIOwnerOfStore } from "@/lib/store-owner.functions";
+import { BrandLogo } from "@/components/brand-logo";
 
 export const Route = createFileRoute("/loja/$slug")({
   loader: async ({ params }) => {
@@ -80,8 +84,16 @@ function CatalogFallback() {
 function StoreCatalog() {
   const catalog = Route.useLoaderData() as NonNullable<PublicCatalog>;
   const { store, categories, products: allProducts } = catalog;
-  const { data: myStore } = useMyStore();
-  const isOwner = !!myStore && myStore.id === store.id;
+  // A propriedade é confirmada no servidor. Visitantes (sem sessão) recebem erro
+  // de autenticação e são tratados como visitantes: catálogo puro.
+  const checkOwner = useServerFn(amIOwnerOfStore);
+  const { data: ownership } = useQuery({
+    queryKey: ["store-owner", store.id],
+    queryFn: () => checkOwner({ data: { storeId: store.id } }),
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
+  const isOwner = ownership?.isOwner === true;
   const [query, setQuery] = useState("");
 
   const [category, setCategory] = useState<string>("all");
@@ -365,9 +377,12 @@ function StoreCatalog() {
 
       {showBranding ? (
         <footer className="px-5 pt-6 text-center text-xs text-muted-foreground">
-          Catálogo criado com{" "}
-          <Link to="/" className="text-primary hover:underline">
-            Djumbai Shop
+          <Link
+            to="/"
+            className="inline-flex flex-col items-center gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <span>Catálogo criado com</span>
+            <BrandLogo height={44} />
           </Link>
         </footer>
       ) : null}

@@ -9,12 +9,13 @@ import {
   Settings,
   ShieldCheck,
   ShoppingBag,
-  Sparkles,
   Tags,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { BrandLogo } from "@/components/brand-logo";
 import { amIAdmin } from "@/lib/admin.functions";
+
 
 const navItems = [
   { to: "/dashboard", label: "Visão geral", icon: LayoutDashboard },
@@ -64,11 +65,10 @@ export function DashboardShell({
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
           <Link to="/dashboard" className="flex min-w-0 items-center gap-2">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-              <Sparkles className="h-4 w-4" />
-            </span>
+            <BrandLogo variant="mark" height={34} priority />
             <span className="truncate font-display font-semibold">Djumbai Shop</span>
           </Link>
+
           <button
             type="button"
             onClick={signOut}
@@ -151,6 +151,7 @@ export function NoStoreState() {
       action={
         <Link
           to="/criar-loja"
+          search={{}}
           className="rounded-xl bg-success px-5 py-3 text-sm font-semibold text-success-foreground"
         >
           Criar a minha loja
