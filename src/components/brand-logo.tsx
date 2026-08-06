@@ -16,17 +16,18 @@ type Props = {
  */
 export function BrandLogo({ variant = "full", height = 36, className, priority }: Props) {
   const src = variant === "full" ? logoFull : logoMark;
-  const ratio = variant === "full" ? 593 / 762 : 241 / 437;
+  const natural = variant === "full" ? { w: 593, h: 762 } : { w: 241, h: 437 };
   return (
     <img
       src={src}
       alt="Djumbai Shop"
-      height={height}
-      width={Math.round(height * ratio)}
-      style={{ height, width: "auto" }}
+      width={natural.w}
+      height={natural.h}
+      style={{ height, width: "auto", maxWidth: "100%", objectFit: "contain" }}
       loading={priority ? "eager" : "lazy"}
       decoding="async"
       className={className}
     />
   );
 }
+
