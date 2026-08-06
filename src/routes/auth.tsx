@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Loader2, Mail, Phone, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { TEAM_WHATSAPP, normalizePhone, phoneToAuthEmail, whatsappUrl } from "@/lib/store-helpers";
+import { BrandLogo } from "@/components/brand-logo";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: z.object({
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Cria a tua conta Djumbai Shop com o teu número de telemóvel e publica o catálogo da tua loja em minutos.",
+          "Cria a tua conta Djumbai Shop com email e senha e publica o catálogo da tua loja em minutos.",
       },
       { property: "og:title", content: "Entrar no Djumbai Shop" },
       {
@@ -33,15 +33,13 @@ export const Route = createFileRoute("/auth")({
 });
 
 type Mode = "signin" | "signup" | "forgot";
-type Method = "phone" | "email";
 
+/** Autenticação Djumbai Shop: apenas email + senha. Sem telemóvel, SMS ou OTP. */
 function AuthPage() {
   const { redirect, mode: initialMode, plan } = Route.useSearch();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>(initialMode ?? "signin");
-  const [method, setMethod] = useState<Method>("phone");
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,9 +51,8 @@ function AuthPage() {
     event.preventDefault();
     setLoading(true);
     try {
-      // Recuperação de senha (só disponível para contas com email).
       if (mode === "forgot") {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
@@ -63,14 +60,7 @@ function AuthPage() {
         return;
       }
 
-      let loginEmail = email.trim();
-      if (method === "phone") {
-        const normalized = normalizePhone(phone);
-        if (!normalized) {
-          throw new Error("Escreve um número de telemóvel válido (9 dígitos).");
-        }
-        loginEmail = phoneToAuthEmail(normalized);
-      }
+      const loginEmail = email.trim();
 
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({
@@ -83,17 +73,15 @@ function AuthPage() {
         return;
       }
 
-      // Criar conta
       if (password.length < 6) throw new Error("A senha precisa de pelo menos 6 caracteres.");
-      if (!name.trim()) throw new Error("Escreve o teu nome.");
-      const normalizedPhone = method === "phone" ? normalizePhone(phone) : null;
+      if (!name.trim()) throw new Error("Escreve o teu nome completo.");
 
       const { data, error } = await supabase.auth.signUp({
         email: loginEmail,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: { full_name: name.trim(), phone: normalizedPhone },
+          data: { full_name: name.trim() },
         },
       });
       if (error) throw error;
@@ -103,18 +91,18 @@ function AuthPage() {
         return;
       }
 
-      // Guardar nome e telemóvel no perfil (o telemóvel é o identificador da conta).
       const { error: profileError } = await supabase.from("profiles").insert({
         user_id: data.session.user.id,
         full_name: name.trim(),
-        phone: normalizedPhone,
       });
       if (profileError && !/duplicate key/i.test(profileError.message)) {
-        // Perfil é importante mas não deve bloquear a entrada.
         console.warn("perfil não guardado", profileError.message);
       }
 
-      navigate({ to: "/criar-loja", search: plan ? { plan } : {} });
+      navigate({
+        to: "/criar-loja",
+        search: plan === "basic" || plan === "pro" ? { plan } : {},
+      });
     } catch (error) {
       toast.error(translateError(error));
     } finally {
@@ -122,22 +110,17 @@ function AuthPage() {
     }
   }
 
-  // Login com Google desativado por decisão de produto (apenas telemóvel/email).
-
-
   return (
     <main className="hero-aura flex min-h-screen flex-col items-center justify-center px-5 py-12">
       <Link
         to="/"
         className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
-        <ArrowLeft className="h-4 w-4" /> Djumbai Shop
+        <ArrowLeft className="h-4 w-4" /> Voltar ao início
       </Link>
 
       <div className="glass-panel w-full max-w-md rounded-3xl p-7">
-        <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary/15 text-primary glow-ring">
-          <ShoppingBag className="h-5 w-5" />
-        </span>
+        <BrandLogo height={72} priority />
 
         {sent ? (
           <div className="mt-6">
@@ -169,35 +152,12 @@ function AuthPage() {
             <p className="mt-2 text-sm text-muted-foreground">
               {mode === "forgot"
                 ? "Escreve o email da conta e enviamos um link para definir nova senha."
-                : "O teu número de telemóvel é o teu acesso. Não é preciso cartão de crédito."}
+                : "Entra com email e senha. Não é preciso cartão de crédito."}
             </p>
-
-            {mode !== "forgot" ? (
-              <div className="mt-5 grid grid-cols-2 gap-2 rounded-xl border border-border p-1">
-                <button
-                  type="button"
-                  onClick={() => setMethod("phone")}
-                  className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${
-                    method === "phone" ? "bg-primary/15 text-primary" : "text-muted-foreground"
-                  }`}
-                >
-                  <Phone className="h-4 w-4" /> Telemóvel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMethod("email")}
-                  className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${
-                    method === "email" ? "bg-primary/15 text-primary" : "text-muted-foreground"
-                  }`}
-                >
-                  <Mail className="h-4 w-4" /> Email
-                </button>
-              </div>
-            ) : null}
 
             <form onSubmit={handleSubmit} className="mt-5 space-y-4">
               {mode === "signup" ? (
-                <Field label="O teu nome">
+                <Field label="Nome completo">
                   <input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -209,36 +169,18 @@ function AuthPage() {
                 </Field>
               ) : null}
 
-              {mode !== "forgot" && method === "phone" ? (
-                <Field label="Número de telemóvel">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-xl border border-input bg-surface/60 px-3 py-3 text-sm text-muted-foreground">
-                      +245
-                    </span>
-                    <input
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      required
-                      inputMode="tel"
-                      maxLength={20}
-                      placeholder="955 469 148"
-                      className={inputClass}
-                    />
-                  </div>
-                </Field>
-              ) : (
-                <Field label="Email">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    maxLength={160}
-                    placeholder="nome@email.com"
-                    className={inputClass}
-                  />
-                </Field>
-              )}
+              <Field label="Email">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  maxLength={160}
+                  placeholder="nome@email.com"
+                  className={inputClass}
+                />
+              </Field>
 
               {mode !== "forgot" ? (
                 <Field label="Senha">
@@ -247,6 +189,7 @@ function AuthPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
                     minLength={6}
                     maxLength={72}
                     placeholder="Pelo menos 6 caracteres"
@@ -269,7 +212,6 @@ function AuthPage() {
               </button>
             </form>
 
-
             <div className="mt-6 space-y-2 text-sm text-muted-foreground">
               {mode === "signin" ? (
                 <>
@@ -285,27 +227,13 @@ function AuthPage() {
                   </p>
                   <p>
                     Esqueceste a senha?{" "}
-                    {method === "email" ? (
-                      <button
-                        type="button"
-                        onClick={() => setMode("forgot")}
-                        className="font-medium text-primary hover:underline"
-                      >
-                        Recuperar por email
-                      </button>
-                    ) : (
-                      <a
-                        href={whatsappUrl(
-                          TEAM_WHATSAPP,
-                          "Olá Djumbai Shop, esqueci a senha da minha conta.",
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-primary hover:underline"
-                      >
-                        Fala com a equipa no WhatsApp
-                      </a>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => setMode("forgot")}
+                      className="font-medium text-primary hover:underline"
+                    >
+                      Recuperar por email
+                    </button>
                   </p>
                 </>
               ) : (
@@ -343,9 +271,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function translateError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   if (/Invalid login credentials/i.test(message))
-    return "Número/email ou senha incorretos. Verifica e tenta outra vez.";
+    return "Email ou senha incorretos. Verifica e tenta outra vez.";
   if (/already registered|already exists|duplicate/i.test(message))
-    return "Já existe uma conta com estes dados. Tenta entrar.";
+    return "Já existe uma conta com este email. Tenta entrar.";
   if (/Email not confirmed/i.test(message)) return "Confirma o teu email antes de entrar.";
   if (/rate limit|too many/i.test(message)) return "Muitas tentativas. Espera um momento.";
   if (/password/i.test(message) && /weak|short|pwned|compromised/i.test(message))
