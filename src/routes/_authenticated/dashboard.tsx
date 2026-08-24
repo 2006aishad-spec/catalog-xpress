@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 
 import {
@@ -26,8 +27,8 @@ import {
   useStoreStats,
 } from "@/hooks/use-store-data";
 import { formatPrice, planOf } from "@/lib/store-helpers";
+import { signedImageUrl } from "@/lib/images";
 import { getPublicCatalog } from "@/lib/catalog.functions";
-
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -42,6 +43,23 @@ function DashboardPage() {
   const { data: categories = [] } = useCategories(store?.id);
   const { data: orders = [] } = useOrders(store?.id);
   const { data: stats } = useStoreStats(store?.id);
+  const [storeLogoUrl, setStoreLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (!store?.logo_url) {
+      setStoreLogoUrl(null);
+      return () => {
+        active = false;
+      };
+    }
+    void signedImageUrl(store.logo_url).then((url) => {
+      if (active) setStoreLogoUrl(url);
+    });
+    return () => {
+      active = false;
+    };
+  }, [store?.logo_url]);
 
   if (isLoading) {
     return (
@@ -61,7 +79,8 @@ function DashboardPage() {
 
   const plan = planOf(store.plan);
   const publicPath = `/loja/${store.slug}`;
-  const publicUrl = typeof window !== "undefined" ? `${window.location.origin}${publicPath}` : publicPath;
+  const publicUrl =
+    typeof window !== "undefined" ? `${window.location.origin}${publicPath}` : publicPath;
   const activeProducts = products.filter((p) => p.is_active).length;
   const published = store.status === "published";
 
@@ -101,7 +120,6 @@ function DashboardPage() {
     }
   }
 
-
   async function copyLink() {
     await navigator.clipboard.writeText(publicUrl);
     toast.success("Link copiado!");
@@ -110,7 +128,11 @@ function DashboardPage() {
   return (
     <DashboardShell
       title={store.name}
-      description={published ? "Catálogo publicado e pronto a partilhar." : "Catálogo em rascunho — publica para começar a vender."}
+      description={
+        published
+          ? "Catálogo publicado e pronto a partilhar."
+          : "Catálogo em rascunho — publica para começar a vender."
+      }
       actions={
         <div className="flex flex-wrap gap-2">
           <Link
@@ -129,14 +151,29 @@ function DashboardPage() {
         </div>
       }
     >
+      <div className="mb-5 flex items-center gap-3 rounded-2xl border border-border bg-surface/40 p-4">
+        <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-primary/15 font-display text-lg font-bold text-primary">
+          {storeLogoUrl ? (
+            <img
+              src={storeLogoUrl}
+              alt={`Logo de ${store.name}`}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            store.name.slice(0, 2).toUpperCase()
+          )}
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground">Cabeçalho da tua loja</p>
+          <p className="truncate font-semibold">{store.name}</p>
+        </div>
+      </div>
       <div className="grid gap-5 lg:grid-cols-3">
         <section className="glass-panel rounded-2xl p-6 lg:col-span-2">
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-                published
-                  ? "bg-success/15 text-success"
-                  : "bg-warning/15 text-warning"
+                published ? "bg-success/15 text-success" : "bg-warning/15 text-warning"
               }`}
             >
               <BadgeCheck className="h-3.5 w-3.5" /> {published ? "Publicado" : "Rascunho"}
@@ -188,7 +225,9 @@ function DashboardPage() {
               <li key={item.label} className="flex items-start gap-3">
                 <span
                   className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full ${
-                    item.done ? "bg-success/20 text-success" : "border border-border text-muted-foreground"
+                    item.done
+                      ? "bg-success/20 text-success"
+                      : "border border-border text-muted-foreground"
                   }`}
                 >
                   {item.done ? <Check className="h-3 w-3" /> : null}
@@ -213,7 +252,10 @@ function DashboardPage() {
           ) : (
             <ul className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border">
               {orders.slice(0, 5).map((order) => (
-                <li key={order.id} className="flex flex-wrap items-center justify-between gap-3 bg-surface/40 px-4 py-3">
+                <li
+                  key={order.id}
+                  className="flex flex-wrap items-center justify-between gap-3 bg-surface/40 px-4 py-3"
+                >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{order.product_name}</p>
                     <p className="text-xs text-muted-foreground">
@@ -231,7 +273,8 @@ function DashboardPage() {
       </section>
 
       <p className="mt-6 text-xs text-muted-foreground">
-        Plano {plan.name}: até {Number.isFinite(plan.maxProducts) ? plan.maxProducts : "produtos ilimitados"}{" "}
+        Plano {plan.name}: até{" "}
+        {Number.isFinite(plan.maxProducts) ? plan.maxProducts : "produtos ilimitados"}{" "}
         {Number.isFinite(plan.maxProducts) ? "produtos" : ""} · preços em {store.currency} (ex.:{" "}
         {formatPrice(15000, store.currency)}).
       </p>
@@ -239,15 +282,7 @@ function DashboardPage() {
   );
 }
 
-function Metric({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof Eye;
-  label: string;
-  value: string;
-}) {
+function Metric({ icon: Icon, label, value }: { icon: typeof Eye; label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border bg-surface/40 p-4">
       <Icon className="h-4 w-4 text-primary" />

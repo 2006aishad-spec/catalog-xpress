@@ -3,15 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
-import {
-  ArrowLeft,
-  MapPin,
-  MessageCircle,
-  Search,
-  Share2,
-  Sparkles,
-  ImageOff,
-} from "lucide-react";
+import { ArrowLeft, MapPin, MessageCircle, Search, Share2, Sparkles, ImageOff } from "lucide-react";
 import { toast } from "sonner";
 import {
   createOrderLead,
@@ -45,7 +37,9 @@ export const Route = createFileRoute("/loja/$slug")({
     }
     const { store } = loaderData;
     const description =
-      store.description || store.tagline || `Catálogo online de ${store.name} com compra no WhatsApp.`;
+      store.description ||
+      store.tagline ||
+      `Catálogo online de ${store.name} com compra no WhatsApp.`;
     return {
       meta: [
         { title: `${store.name} — Catálogo online | Djumbai Shop` },
@@ -109,9 +103,7 @@ function StoreCatalog() {
     return allProducts.filter((p) => {
       const matchCategory = category === "all" || p.category_id === category;
       const matchTerm =
-        !term ||
-        p.name.toLowerCase().includes(term) ||
-        p.description.toLowerCase().includes(term);
+        !term || p.name.toLowerCase().includes(term) || p.description.toLowerCase().includes(term);
       return matchCategory && matchTerm;
     });
   }, [allProducts, query, category]);
@@ -153,7 +145,10 @@ function StoreCatalog() {
   const showBranding = planOf(store.plan).branding !== "Sem marca Djumbai";
 
   return (
-    <main className="min-h-screen pb-16">
+    <main
+      className="min-h-screen pb-16"
+      style={{ "--store-accent": store.primary_color || "#22d3ee" } as React.CSSProperties}
+    >
       {isOwner ? (
         <div className="border-b border-primary/30 bg-primary/10 px-5 py-2.5">
           <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 text-xs">
@@ -163,7 +158,8 @@ function StoreCatalog() {
             <div className="flex gap-2">
               <Link
                 to="/produtos"
-                className="rounded-lg bg-primary px-3 py-1.5 font-semibold text-primary-foreground"
+                className="rounded-lg px-3 py-1.5 font-semibold text-primary-foreground"
+                style={{ backgroundColor: "var(--store-accent)" }}
               >
                 Editar produtos
               </Link>
@@ -195,10 +191,23 @@ function StoreCatalog() {
               <Share2 className="h-3.5 w-3.5" /> Partilhar
             </button>
           </div>
+          {store.banner_url ? (
+            <div className="mt-5 overflow-hidden rounded-2xl border border-border/60">
+              <img
+                src={store.banner_url}
+                alt={`Capa de ${store.name}`}
+                className="h-36 w-full object-cover sm:h-48"
+              />
+            </div>
+          ) : null}
           <div className="mt-6 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4">
             <span className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-primary/15 font-display text-xl font-bold text-primary glow-ring">
               {store.logo_url ? (
-                <img src={store.logo_url} alt={`Logo de ${store.name}`} className="h-full w-full object-cover" />
+                <img
+                  src={store.logo_url}
+                  alt={`Logo de ${store.name}`}
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 initialsOf(store.name)
               )}
@@ -211,7 +220,9 @@ function StoreCatalog() {
             </div>
           </div>
           {store.description ? (
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{store.description}</p>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              {store.description}
+            </p>
           ) : null}
           <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
             {store.location ? (
@@ -246,9 +257,12 @@ function StoreCatalog() {
                   onClick={() => setCategory(cat.id)}
                   className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     category === cat.id
-                      ? "bg-primary text-primary-foreground"
+                      ? "text-primary-foreground"
                       : "border border-border text-muted-foreground hover:text-foreground"
                   }`}
+                  style={
+                    category === cat.id ? { backgroundColor: "var(--store-accent)" } : undefined
+                  }
                 >
                   {cat.name}
                 </button>
@@ -361,7 +375,8 @@ function StoreCatalog() {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => void handleOrder(product)}
-                          className="mt-3 inline-flex items-center justify-center gap-2 rounded-xl bg-success px-3 py-2.5 text-xs font-semibold text-success-foreground transition-transform hover:scale-[1.02] active:scale-100"
+                          className="mt-3 inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold text-success-foreground transition-transform hover:scale-[1.02] active:scale-100"
+                          style={{ backgroundColor: "var(--store-accent)" }}
                         >
                           <MessageCircle className="h-3.5 w-3.5" /> Comprar no WhatsApp
                         </a>

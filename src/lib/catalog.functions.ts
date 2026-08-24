@@ -77,8 +77,10 @@ export const getPublicCatalog = createServerFn({ method: "GET" })
           .eq("is_active", true)
           .order("sort_order", { ascending: true }),
       ]);
-      if (catRes.error) console.error("[catalog] categories failed", { slug: data.slug, error: catRes.error });
-      if (prodRes.error) console.error("[catalog] products failed", { slug: data.slug, error: prodRes.error });
+      if (catRes.error)
+        console.error("[catalog] categories failed", { slug: data.slug, error: catRes.error });
+      if (prodRes.error)
+        console.error("[catalog] products failed", { slug: data.slug, error: prodRes.error });
       categories = catRes.data ?? [];
       rawProducts = (prodRes.data ?? []) as Record<string, unknown>[];
     } catch (error) {
@@ -88,9 +90,16 @@ export const getPublicCatalog = createServerFn({ method: "GET" })
 
     // Storage é uma dependência independente: se falhar, o catálogo carrega sem fotos.
     const signed = new Map<string, string>();
-    const paths = rawProducts
-      .map((p) => p["image_url"])
-      .filter((p): p is string => typeof p === "string" && p.length > 0);
+    const storeAssetPaths = [store.logo_url, store.banner_url].filter(
+      (path): path is string =>
+        typeof path === "string" && path.length > 0 && !path.startsWith("http"),
+    );
+    const paths = [
+      ...storeAssetPaths,
+      ...rawProducts
+        .map((p) => p["image_url"])
+        .filter((p): p is string => typeof p === "string" && p.length > 0 && !p.startsWith("http")),
+    ];
     if (paths.length) {
       try {
         const { data: urls, error } = await client.storage
@@ -100,7 +109,10 @@ export const getPublicCatalog = createServerFn({ method: "GET" })
         urls?.forEach((entry) => {
           // Entradas com erro parcial são ignoradas; as válidas continuam a ser usadas.
           if (entry.error) {
-            console.error("[catalog] signed url entry failed", { path: entry.path, error: entry.error });
+            console.error("[catalog] signed url entry failed", {
+              path: entry.path,
+              error: entry.error,
+            });
             return;
           }
           if (entry.path && entry.signedUrl) signed.set(entry.path, entry.signedUrl);
@@ -111,7 +123,21 @@ export const getPublicCatalog = createServerFn({ method: "GET" })
     }
 
     return {
-      store: store as PublicStore,
+      store: {
+        ...(store as PublicStore),
+        logo_url:
+          typeof store.logo_url === "string" && store.logo_url.startsWith("http")
+            ? store.logo_url
+            : store.logo_url
+              ? (signed.get(store.logo_url) ?? null)
+              : null,
+        banner_url:
+          typeof store.banner_url === "string" && store.banner_url.startsWith("http")
+            ? store.banner_url
+            : store.banner_url
+              ? (signed.get(store.banner_url) ?? null)
+              : null,
+      },
       categories,
       products: rawProducts.map((p) => {
         const path = typeof p["image_url"] === "string" ? (p["image_url"] as string) : null;
@@ -119,12 +145,14 @@ export const getPublicCatalog = createServerFn({ method: "GET" })
           ...p,
           image_url: path ? (signed.get(path) ?? null) : null,
           price: Number(p["price"] ?? 0),
-          sale_price: p["sale_price"] === null || p["sale_price"] === undefined ? null : Number(p["sale_price"]),
+          sale_price:
+            p["sale_price"] === null || p["sale_price"] === undefined
+              ? null
+              : Number(p["sale_price"]),
         };
       }) as PublicProduct[],
     };
   });
-
 
 export const logStoreEvent = createServerFn({ method: "POST" })
   .inputValidator(
@@ -178,17 +206,15 @@ export const createOrderLead = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { publicClient } = await import("./supabase-public.server");
-    const { error } = await publicClient()
-      .from("orders")
-      .insert({
-        store_id: data.storeId,
-        product_id: data.productId,
-        product_name: data.productName,
-        customer_name: data.customerName,
-        customer_phone: data.customerPhone,
-        quantity: data.quantity,
-        variant: data.variant,
-        notes: data.notes,
-      });
+    const { error } = await publicClient().from("orders").insert({
+      store_id: data.storeId,
+      product_id: data.productId,
+      product_name: data.productName,
+      customer_name: data.customerName,
+      customer_phone: data.customerPhone,
+      quantity: data.quantity,
+      variant: data.variant,
+      notes: data.notes,
+    });
     return { ok: !error };
   });

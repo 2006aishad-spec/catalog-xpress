@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DashboardShell, NoStoreState } from "@/components/dashboard-shell";
 import { useMyStore } from "@/hooks/use-store-data";
 import { PLANS, type PlanId, limitLabel, onlyDigits, planOf } from "@/lib/store-helpers";
+import { uploadStoreAsset } from "@/lib/images";
 
 export const Route = createFileRoute("/_authenticated/loja")({
   component: StoreSettingsPage,
@@ -18,7 +19,8 @@ function StoreSettingsPage() {
   const { data: store, isLoading } = useMyStore();
   const [saving, setSaving] = useState(false);
   const [pendingPlan, setPendingPlan] = useState<PlanId | null>(null);
-
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
 
   if (isLoading) {
     return (
@@ -35,31 +37,62 @@ function StoreSettingsPage() {
     );
   }
 
-  const plan = planOf(store.plan);
+  const currentStore = store;
+  const plan = planOf(currentStore.plan);
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     setSaving(true);
-    const { error } = await supabase
-      .from("stores")
-      .update({
-        name: String(form.get("name") ?? "").slice(0, 80),
-        tagline: String(form.get("tagline") ?? "").slice(0, 140),
-        description: String(form.get("description") ?? "").slice(0, 600),
-        location: String(form.get("location") ?? "").slice(0, 120),
-        whatsapp_number: onlyDigits(String(form.get("whatsapp") ?? "")),
-        currency: String(form.get("currency") ?? "XOF").slice(0, 6),
-        primary_color: String(form.get("color") ?? "#22d3ee"),
-      })
-      .eq("id", store!.id);
-    setSaving(false);
-    if (error) {
-      toast.error("Não foi possível guardar as alterações.");
-      return;
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user.id;
+      if (!userId) throw new Error("Sessão expirada.");
+      if (logoFile && plan.id === "free") {
+        throw new Error(
+          "Este recurso está disponível a partir do plano Básico. Faz upgrade para desbloquear.",
+        );
+      }
+      if (bannerFile && plan.id !== "pro") {
+        throw new Error(
+          "Este recurso está disponível no plano Profissional. Faz upgrade para desbloquear.",
+        );
+      }
+      const logoPath = logoFile
+        ? await uploadStoreAsset(logoFile, userId, "logo")
+        : currentStore.logo_url;
+      const bannerPath = bannerFile
+        ? await uploadStoreAsset(bannerFile, userId, "banner")
+        : currentStore.banner_url;
+      const { error } = await supabase
+        .from("stores")
+        .update({
+          name: String(form.get("name") ?? "").slice(0, 80),
+          tagline: String(form.get("tagline") ?? "").slice(0, 140),
+          description: String(form.get("description") ?? "").slice(0, 600),
+          location: String(form.get("location") ?? "").slice(0, 120),
+          whatsapp_number: onlyDigits(String(form.get("whatsapp") ?? "")),
+          currency: String(form.get("currency") ?? "XOF").slice(0, 6),
+          primary_color:
+            plan.id === "pro"
+              ? String(form.get("color") ?? "#22d3ee")
+              : currentStore.primary_color || "#22d3ee",
+          logo_url: logoPath,
+          banner_url: bannerPath,
+        })
+        .eq("id", currentStore.id);
+      if (error) throw error;
+      toast.success("Loja atualizada.");
+      setLogoFile(null);
+      setBannerFile(null);
+      queryClient.invalidateQueries({ queryKey: ["my-store"] });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Não foi possível guardar as alterações.",
+      );
+    } finally {
+      setSaving(false);
     }
-    toast.success("Loja atualizada.");
-    queryClient.invalidateQueries({ queryKey: ["my-store"] });
   }
 
   async function changePlan(planId: PlanId) {
@@ -78,7 +111,6 @@ function StoreSettingsPage() {
     toast.success("Voltaste ao plano Grátis.");
     queryClient.invalidateQueries({ queryKey: ["my-store"] });
   }
-
 
   return (
     <DashboardShell
@@ -102,12 +134,7 @@ function StoreSettingsPage() {
           />
         </Field>
         <Field label="WhatsApp (com indicativo)">
-          <input
-            name="whatsapp"
-            defaultValue={store.whatsapp_number}
-            required
-            className={input}
-          />
+          <input name="whatsapp" defaultValue={store.whatsapp_number} required className={input} />
         </Field>
         <Field label="Localização">
           <input name="location" defaultValue={store.location} maxLength={120} className={input} />
@@ -116,12 +143,47 @@ function StoreSettingsPage() {
           <input name="currency" defaultValue={store.currency} maxLength={6} className={input} />
         </Field>
         <Field label="Cor principal">
-          <input
-            type="color"
-            name="color"
-            defaultValue={store.primary_color}
-            className="h-12 w-full rounded-xl border border-input bg-surface/60 px-2"
-          />
+          {plan.id === "pro" ? (
+            <input
+              type="color"
+              name="color"
+              defaultValue={store.primary_color || "#22d3ee"}
+              className="h-12 w-full rounded-xl border border-input bg-surface/60 px-2"
+            />
+          ) : (
+            <div className="rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
+              A cor personalizada está disponível no plano Profissional. Faz upgrade para
+              desbloquear.
+            </div>
+          )}
+        </Field>
+        <Field label="Logo da loja (máx. 5 MB)">
+          {plan.id === "free" ? (
+            <div className="rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
+              O logo está disponível a partir do plano Básico. Faz upgrade para desbloquear.
+            </div>
+          ) : (
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)}
+              className={input}
+            />
+          )}
+        </Field>
+        <Field label="Capa da loja (máx. 5 MB)">
+          {plan.id !== "pro" ? (
+            <div className="rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
+              A capa está disponível no plano Profissional. Faz upgrade para desbloquear.
+            </div>
+          ) : (
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(event) => setBannerFile(event.target.files?.[0] ?? null)}
+              className={input}
+            />
+          )}
         </Field>
         <div className="sm:col-span-2">
           <button
@@ -165,13 +227,15 @@ function StoreSettingsPage() {
                 categorias
               </li>
               <li className="flex gap-2">
-                <Check className="mt-0.5 h-4 w-4 text-success" /> Estatísticas {item.analytics.toLowerCase()}
+                <Check className="mt-0.5 h-4 w-4 text-success" /> Estatísticas{" "}
+                {item.analytics.toLowerCase()}
               </li>
               <li className="flex gap-2">
                 <Check className="mt-0.5 h-4 w-4 text-success" /> {item.branding}
               </li>
               <li className="flex gap-2">
-                <Check className="mt-0.5 h-4 w-4 text-success" /> Suporte {item.support.toLowerCase()}
+                <Check className="mt-0.5 h-4 w-4 text-success" /> Suporte{" "}
+                {item.support.toLowerCase()}
               </li>
             </ul>
             <button
@@ -195,9 +259,10 @@ function StoreSettingsPage() {
           <div className="glass-panel w-full max-w-md rounded-2xl p-6">
             <h3 className="text-lg font-semibold">Pedido de plano {planOf(pendingPlan).name}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              O teu pedido fica <span className="text-warning">pendente de confirmação da nossa
-              equipa</span>. A loja mantém-se no plano atual até o pagamento ser confirmado
-              manualmente — nada é cobrado nem ativado automaticamente.
+              O teu pedido fica{" "}
+              <span className="text-warning">pendente de confirmação da nossa equipa</span>. A loja
+              mantém-se no plano atual até o pagamento ser confirmado manualmente — nada é cobrado
+              nem ativado automaticamente.
             </p>
             <p className="mt-3 text-sm text-muted-foreground">
               Fala com a equipa Djumbai para combinar o pagamento e ativar o plano.
@@ -225,7 +290,6 @@ function StoreSettingsPage() {
         </div>
       ) : null}
     </DashboardShell>
-
   );
 }
 
