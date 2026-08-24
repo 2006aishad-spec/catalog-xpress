@@ -295,7 +295,7 @@ function Landing() {
             <div className="mt-8 text-center">
               <Link
                 to="/auth"
-                search={{ plan: "free", mode: "signup" }}
+                search={{ mode: "signup" }}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-success px-6 py-3.5 font-semibold text-success-foreground transition-transform hover:scale-[1.02] active:scale-100"
               >
                 Criar a minha loja grátis <ArrowRight className="h-4 w-4" />
