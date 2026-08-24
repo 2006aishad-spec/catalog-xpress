@@ -122,7 +122,8 @@
     oklch(1 0 0 / 2%) 45%,
     oklch(1 0 0 / 0%) 100%
   );
-  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--primary) 25%, transparent),
+  --shadow-glow:
+    0 0 0 1px color-mix(in oklab, var(--primary) 25%, transparent),
     0 18px 60px -18px color-mix(in oklab, var(--primary) 45%, transparent);
   --shadow-depth: 0 24px 70px -30px oklch(0 0 0 / 80%);
   --transition-smooth: 320ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -172,7 +173,9 @@
 }
 
 @utility surface-hover {
-  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth),
+  transition:
+    transform var(--transition-smooth),
+    box-shadow var(--transition-smooth),
     border-color var(--transition-smooth);
   &:hover {
     transform: translateY(-4px);
@@ -183,4 +186,163 @@
 
 @utility hero-aura {
   background-image: var(--gradient-hero);
+}
+
+@layer components {
+  .aurora-background {
+    opacity: 0.72;
+    mask-image: linear-gradient(to bottom, black 0%, black 72%, transparent 100%);
+  }
+
+  .aurora-orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(72px);
+    opacity: 0.3;
+    will-change: transform;
+  }
+
+  .aurora-orb-one {
+    top: -18%;
+    left: 10%;
+    width: 24rem;
+    height: 18rem;
+    background: color-mix(in oklab, var(--primary) 58%, transparent);
+    animation: aurora-drift-one 16s ease-in-out infinite alternate;
+  }
+
+  .aurora-orb-two {
+    top: 8%;
+    right: 8%;
+    width: 22rem;
+    height: 20rem;
+    background: color-mix(in oklab, var(--accent) 54%, transparent);
+    animation: aurora-drift-two 20s ease-in-out infinite alternate;
+  }
+
+  .aurora-orb-three {
+    bottom: -14%;
+    left: 42%;
+    width: 20rem;
+    height: 15rem;
+    background: color-mix(in oklab, var(--success) 34%, transparent);
+    animation: aurora-drift-three 18s ease-in-out infinite alternate;
+  }
+
+  .shiny-text {
+    display: inline-block;
+    background-image: linear-gradient(
+      110deg,
+      var(--primary) 0%,
+      var(--primary) 36%,
+      color-mix(in oklab, white 90%, var(--primary)) 50%,
+      var(--accent) 64%,
+      var(--primary) 100%
+    );
+    background-size: 220% 100%;
+    background-clip: text;
+    color: transparent;
+    animation: shiny-text-sweep 5s ease-in-out infinite;
+  }
+
+  .motion-rise {
+    animation: motion-rise-in 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .motion-delay-1 {
+    animation-delay: 80ms;
+  }
+
+  .motion-delay-2 {
+    animation-delay: 180ms;
+  }
+
+  .motion-delay-3 {
+    animation-delay: 280ms;
+  }
+
+  .motion-rise:nth-child(2) {
+    animation-delay: 120ms;
+  }
+
+  .motion-rise:nth-child(3) {
+    animation-delay: 200ms;
+  }
+
+  .motion-rise:nth-child(4) {
+    animation-delay: 280ms;
+  }
+
+  .motion-rise:nth-child(5) {
+    animation-delay: 360ms;
+  }
+
+  .motion-rise:nth-child(6) {
+    animation-delay: 440ms;
+  }
+}
+
+@keyframes aurora-drift-one {
+  from {
+    transform: translate3d(-5%, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(18%, 20%, 0) scale(1.12);
+  }
+}
+
+@keyframes aurora-drift-two {
+  from {
+    transform: translate3d(8%, -4%, 0) scale(0.96);
+  }
+  to {
+    transform: translate3d(-18%, 18%, 0) scale(1.1);
+  }
+}
+
+@keyframes aurora-drift-three {
+  from {
+    transform: translate3d(-8%, 6%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(10%, -12%, 0) scale(1.12);
+  }
+}
+
+@keyframes shiny-text-sweep {
+  0%,
+  55% {
+    background-position: 160% 50%;
+  }
+  78%,
+  100% {
+    background-position: -40% 50%;
+  }
+}
+
+@keyframes motion-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .surface-hover:hover {
+    transform: none;
+    box-shadow: none;
+  }
 }
