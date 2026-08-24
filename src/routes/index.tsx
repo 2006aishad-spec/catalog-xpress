@@ -22,7 +22,6 @@ import { BrandLogo } from "@/components/brand-logo";
 import { PLANS } from "@/lib/store-helpers";
 import { useSession } from "@/hooks/use-session";
 
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -66,7 +65,7 @@ const benefits = [
   },
   {
     icon: Palette,
-    title: "A sua identidade",
+    title: "A tua identidade",
     text: "Logo, cor principal, capa e mensagem de boas-vindas personalizadas.",
   },
   {
@@ -82,30 +81,40 @@ const steps = [
   { n: "03", title: "Partilha o link", text: "Recebe encomendas e acompanha os resultados." },
 ];
 
+const demoProducts = [
+  {
+    name: "Vestido Africano",
+    price: "15.000 XOF",
+    tone: "from-red-500 via-yellow-400 to-green-600",
+  },
+  {
+    name: "Sandálias Premium",
+    price: "8.500 XOF",
+    tone: "from-amber-500 via-orange-400 to-red-500",
+  },
+  {
+    name: "Bolsa Elegante",
+    price: "12.000 XOF",
+    tone: "from-emerald-500 via-teal-400 to-blue-500",
+  },
+  {
+    name: "Conjunto Feminino",
+    price: "18.000 XOF",
+    tone: "from-fuchsia-500 via-purple-400 to-indigo-500",
+  },
+  { name: "Óculos Fashion", price: "5.000 XOF", tone: "from-slate-700 via-slate-500 to-cyan-400" },
+  {
+    name: "Sapatos Casuais",
+    price: "10.500 XOF",
+    tone: "from-lime-500 via-green-400 to-emerald-600",
+  },
+];
+
 // Fonte única de verdade dos planos: src/lib/store-helpers.ts
 const plans = [
   { ...PLANS.free, cta: "Começar grátis", planId: "free" as const, highlight: false },
   { ...PLANS.basic, cta: "Escolher Básico", planId: "basic" as const, highlight: true },
   { ...PLANS.pro, cta: "Escolher Pro", planId: "pro" as const, highlight: false },
-];
-
-
-const testimonials = [
-  {
-    name: "Aida Sanhá",
-    role: "Bela Moda · Bissau",
-    text: "Antes enviava fotos uma a uma. Agora mando um link e as clientes escolhem sozinhas.",
-  },
-  {
-    name: "Nuno Cabral",
-    role: "TecnoPhone · Bafatá",
-    text: "Em duas semanas dobrei as encomendas. O cliente já chega a saber o preço.",
-  },
-  {
-    name: "Mariama Baldé",
-    role: "Glow Cosmética",
-    text: "Consigo atualizar preços do telemóvel entre atendimentos. Simples de verdade.",
-  },
 ];
 
 const faqs = [
@@ -115,7 +124,7 @@ const faqs = [
   },
   {
     q: "Os pagamentos passam pela plataforma?",
-    a: "Não. A negociação e o pagamento acontecem no WhatsApp, como já fazes hoje. Nós organizamos o catálogo e registamos os pedidos.",
+    a: "Os clientes contactam a tua loja pelo WhatsApp e combinam contigo a forma de pagamento. O pagamento da mensalidade do Djumbai Shop é tratado separadamente através da nossa equipa.",
   },
   {
     q: "Posso usar o meu domínio?",
@@ -123,7 +132,7 @@ const faqs = [
   },
   {
     q: "Posso cancelar quando quiser?",
-    a: "Sim. O cancelamento é feito com um clique na área de faturação, sem contratos.",
+    a: "O cancelamento é tratado pela nossa equipa nesta fase. O pagamento automático e a área de faturação automática serão adicionados futuramente.",
   },
 ];
 
@@ -225,6 +234,73 @@ function Landing() {
               height={1024}
               className="w-full rounded-2xl object-cover"
             />
+          </div>
+        </div>
+      </section>
+
+      {/* Demonstração */}
+      <section className="px-5 py-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                Demonstração · Exemplo de catálogo
+              </span>
+              <h2 className="mt-4 text-3xl font-bold sm:text-4xl">
+                Veja como a sua loja pode ficar
+              </h2>
+              <p className="mt-3 text-muted-foreground">
+                Exemplo de catálogo criado com o Djumbai Shop
+              </p>
+            </div>
+            <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+              Os seus clientes veem os produtos, escolhem o que querem e entram diretamente em
+              contacto consigo pelo WhatsApp.
+            </p>
+          </div>
+          <div className="mt-8 rounded-3xl border border-border bg-surface/40 p-4 sm:p-6">
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                  Loja de exemplo
+                </p>
+                <h3 className="mt-1 text-xl font-semibold">Bela Moda</h3>
+              </div>
+              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
+                Não é um catálogo real
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+              {demoProducts.map((product) => (
+                <article
+                  key={product.name}
+                  className="glass-panel surface-hover overflow-hidden rounded-2xl"
+                >
+                  <div
+                    className={`grid aspect-square place-items-center bg-gradient-to-br ${product.tone} p-5`}
+                  >
+                    <span className="rounded-full border border-white/40 bg-black/15 px-3 py-1 text-center text-xs font-semibold text-white backdrop-blur-sm">
+                      Bela Moda
+                    </span>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="text-sm font-semibold leading-snug">{product.name}</h3>
+                    <p className="mt-2 font-display text-base font-semibold text-primary">
+                      {product.price}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="mt-8 text-center">
+              <Link
+                to="/auth"
+                search={{ plan: "free", mode: "signup" }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-success px-6 py-3.5 font-semibold text-success-foreground transition-transform hover:scale-[1.02] active:scale-100"
+              >
+                Criar a minha loja grátis <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -352,23 +428,6 @@ function Landing() {
               </article>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Depoimentos */}
-      <section className="px-5 py-8">
-        <div className="mx-auto grid max-w-6xl gap-5 md:grid-cols-3">
-          {testimonials.map((t) => (
-            <figure key={t.name} className="glass-panel rounded-2xl p-6">
-              <blockquote className="text-sm leading-relaxed text-foreground/90">
-                “{t.text}”
-              </blockquote>
-              <figcaption className="mt-5 text-sm">
-                <span className="font-semibold">{t.name}</span>
-                <span className="block text-xs text-muted-foreground">{t.role}</span>
-              </figcaption>
-            </figure>
-          ))}
         </div>
       </section>
 
