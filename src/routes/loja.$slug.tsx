@@ -402,13 +402,13 @@ function StoreCatalog() {
           <div className="mx-auto mt-6 flex items-center justify-center gap-2 border-t border-border/60 pt-5">
             <img
               src="/djumbai-studio-logo.png"
-              alt="Jumbay Studio"
+              alt="Djumbai Studio"
               width={40}
               height={40}
               className="h-10 w-10 rounded-lg object-cover"
             />
             <span>
-              Desenvolvido por <strong className="text-foreground">Jumbay Studio</strong>
+              Desenvolvido por <strong className="text-foreground">Djumbai Studio</strong>
             </span>
           </div>
         </footer>

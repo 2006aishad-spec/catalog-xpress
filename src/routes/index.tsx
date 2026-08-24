@@ -469,7 +469,7 @@ function Landing() {
           <div className="flex items-center gap-3">
             <img
               src="/djumbai-studio-logo.png"
-              alt="Jumbay Studio"
+              alt="Djumbai Studio"
               width={56}
               height={56}
               className="h-14 w-14 rounded-xl object-cover"
@@ -478,7 +478,7 @@ function Landing() {
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
                 Desenvolvido por
               </p>
-              <p className="font-display text-base font-semibold text-foreground">Jumbay Studio</p>
+              <p className="font-display text-base font-semibold text-foreground">Djumbai Studio</p>
             </div>
           </div>
           <span>© {new Date().getFullYear()} Djumbai Shop. Feito para negócios locais.</span>
