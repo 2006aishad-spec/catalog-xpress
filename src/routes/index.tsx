@@ -464,8 +464,23 @@ function Landing() {
       </section>
 
       <footer className="border-t border-border/60 px-5 py-10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <BrandLogo height={60} />
+          <div className="flex items-center gap-3">
+            <img
+              src="/djumbai-studio-logo.png"
+              alt="Jumbay Studio"
+              width={56}
+              height={56}
+              className="h-14 w-14 rounded-xl object-cover"
+            />
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                Desenvolvido por
+              </p>
+              <p className="font-display text-base font-semibold text-foreground">Jumbay Studio</p>
+            </div>
+          </div>
           <span>© {new Date().getFullYear()} Djumbai Shop. Feito para negócios locais.</span>
         </div>
       </footer>
