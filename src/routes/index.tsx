@@ -85,30 +85,34 @@ const steps = [
 
 const demoProducts = [
   {
-    name: "Vestido Africano",
-    price: "15.000 XOF",
-    tone: "from-red-500 via-yellow-400 to-green-600",
+    name: "Smartwatch Ultra",
+    price: "25.000 XOF",
+    image: "/demo-products/smartwatch-ultra.jpg",
   },
   {
-    name: "Sandálias Premium",
-    price: "8.500 XOF",
-    tone: "from-amber-500 via-orange-400 to-red-500",
+    name: "Coluna Bluetooth X10",
+    price: "15.000 XOF",
+    image: "/demo-products/bluetooth-speaker.jpg",
+  },
+  {
+    name: "Painel Solar 200W",
+    price: "85.000 XOF",
+    image: "/demo-products/solar-panel.jpg",
+  },
+  {
+    name: "Auriculares sem fios",
+    price: "12.000 XOF",
+    image: "/demo-products/earbuds.jpg",
   },
   {
     name: "Bolsa Elegante",
-    price: "12.000 XOF",
-    tone: "from-emerald-500 via-teal-400 to-blue-500",
-  },
-  {
-    name: "Conjunto Feminino",
     price: "18.000 XOF",
-    tone: "from-fuchsia-500 via-purple-400 to-indigo-500",
+    image: "/demo-products/fashion-bag.jpg",
   },
-  { name: "Óculos Fashion", price: "5.000 XOF", tone: "from-slate-700 via-slate-500 to-cyan-400" },
   {
-    name: "Sapatos Casuais",
-    price: "10.500 XOF",
-    tone: "from-lime-500 via-green-400 to-emerald-600",
+    name: "Vestido Africano",
+    price: "30.000 XOF",
+    image: "/demo-products/african-dress.jpg",
   },
 ];
 
@@ -276,12 +280,16 @@ function Landing() {
               {demoProducts.map((product) => (
                 <article
                   key={product.name}
-                  className="glass-panel motion-rise surface-hover overflow-hidden rounded-2xl"
+                  className="glass-panel group motion-rise surface-hover overflow-hidden rounded-2xl"
                 >
-                  <div
-                    className={`grid aspect-square place-items-center bg-gradient-to-br ${product.tone} p-5`}
-                  >
-                    <span className="rounded-full border border-white/40 bg-black/15 px-3 py-1 text-center text-xs font-semibold text-white backdrop-blur-sm">
+                  <div className="relative aspect-square overflow-hidden bg-secondary/40">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <span className="absolute left-3 top-3 rounded-full border border-white/40 bg-black/35 px-3 py-1 text-center text-xs font-semibold text-white backdrop-blur-sm">
                       Bela Moda
                     </span>
                   </div>

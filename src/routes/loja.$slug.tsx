@@ -3,10 +3,21 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
-import { ArrowLeft, MapPin, MessageCircle, Search, Share2, Sparkles, ImageOff } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  ClipboardList,
+  ImageOff,
+  MapPin,
+  MessageCircle,
+  Search,
+  Share2,
+  Sparkles,
+  Trash2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
-  createOrderLead,
   getPublicCatalog,
   logStoreEvent,
   type PublicCatalog,
@@ -15,7 +26,6 @@ import {
 import {
   availabilityLabel,
   availabilityOf,
-  buildWhatsappMessage,
   deviceType,
   formatPrice,
   initialsOf,
@@ -89,14 +99,40 @@ function StoreCatalog() {
   });
   const isOwner = ownership?.isOwner === true;
   const [query, setQuery] = useState("");
-
   const [category, setCategory] = useState<string>("all");
+  const [interestIds, setInterestIds] = useState<string[]>([]);
+  const [interestReady, setInterestReady] = useState(false);
+  const [interestOpen, setInterestOpen] = useState(false);
+  const interestStorageKey = `djumbai-interest-list:${store.id}`;
 
   useEffect(() => {
     void logStoreEvent({
       data: { storeId: store.id, eventType: "catalog_view", device: deviceType() },
     });
   }, [store.id]);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(interestStorageKey);
+      const parsed = saved ? JSON.parse(saved) : [];
+      setInterestIds(
+        Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : [],
+      );
+    } catch {
+      setInterestIds([]);
+    } finally {
+      setInterestReady(true);
+    }
+  }, [interestStorageKey]);
+
+  useEffect(() => {
+    if (!interestReady) return;
+    try {
+      window.localStorage.setItem(interestStorageKey, JSON.stringify(interestIds));
+    } catch {
+      /* armazenamento local indisponível */
+    }
+  }, [interestIds, interestReady, interestStorageKey]);
 
   const products = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -108,24 +144,42 @@ function StoreCatalog() {
     });
   }, [allProducts, query, category]);
 
-  async function handleOrder(product: PublicProduct) {
-    const price = product.sale_price ?? product.price;
-    void logStoreEvent({
-      data: {
-        storeId: store.id,
-        eventType: "whatsapp_click",
-        productId: product.id,
-        device: deviceType(),
-      },
+  const selectedProducts = useMemo(
+    () =>
+      interestIds
+        .map((id) => allProducts.find((product) => product.id === id))
+        .filter(Boolean) as PublicProduct[],
+    [allProducts, interestIds],
+  );
+
+  function toggleInterest(product: PublicProduct) {
+    if (availabilityOf(product.stock) === "out") return;
+    setInterestIds((current) =>
+      current.includes(product.id)
+        ? current.filter((id) => id !== product.id)
+        : [...current, product.id],
+    );
+    toast.success(interestIds.includes(product.id) ? "Removido da lista" : "Adicionado à lista");
+  }
+
+  function sendInterestList() {
+    if (!selectedProducts.length) return;
+    const lines = selectedProducts.map((product, index) => {
+      const price = product.sale_price ?? product.price;
+      return `${index + 1}. ${product.name}\\nPreço: ${formatPrice(price, store.currency)}`;
     });
-    void createOrderLead({
-      data: {
-        storeId: store.id,
-        productId: product.id,
-        productName: product.name,
-        notes: `Interesse via catálogo · ${formatPrice(price, store.currency)}`,
-      },
+    const message = `Olá!\\n\\nTenho interesse nos seguintes produtos:\\n\\n${lines.join("\\n\\n")}\\n\\nPodem enviar mais informações?`;
+    selectedProducts.forEach((product) => {
+      void logStoreEvent({
+        data: {
+          storeId: store.id,
+          eventType: "whatsapp_click",
+          productId: product.id,
+          device: deviceType(),
+        },
+      });
     });
+    window.open(whatsappUrl(store.whatsapp_number, message), "_blank", "noopener,noreferrer");
   }
 
   async function share() {
@@ -302,13 +356,7 @@ function StoreCatalog() {
               {products.map((product) => {
                 const availability = availabilityOf(product.stock);
                 const price = product.sale_price ?? product.price;
-                const message = buildWhatsappMessage({
-                  storeName: store.name,
-                  productName: product.name,
-                  price,
-                  currency: store.currency,
-                  sku: product.sku,
-                });
+                const selected = interestIds.includes(product.id);
                 const soldOut = availability === "out";
                 return (
                   <article
@@ -370,16 +418,24 @@ function StoreCatalog() {
                           Esgotado
                         </span>
                       ) : (
-                        <a
-                          href={whatsappUrl(store.whatsapp_number, message)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => void handleOrder(product)}
-                          className="mt-3 inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold text-success-foreground transition-transform hover:scale-[1.02] active:scale-100"
-                          style={{ backgroundColor: "var(--store-accent)" }}
+                        <button
+                          type="button"
+                          onClick={() => toggleInterest(product)}
+                          className="mt-3 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-transform hover:scale-[1.02] active:scale-100"
+                          style={
+                            selected
+                              ? { backgroundColor: "var(--store-accent)", color: "white" }
+                              : { border: "1px solid hsl(var(--border))" }
+                          }
+                          aria-pressed={selected}
                         >
-                          <MessageCircle className="h-3.5 w-3.5" /> Comprar no WhatsApp
-                        </a>
+                          {selected ? (
+                            <Check className="h-3.5 w-3.5" />
+                          ) : (
+                            <ClipboardList className="h-3.5 w-3.5" />
+                          )}
+                          {selected ? "Adicionado à Lista" : "Adicionar à Lista"}
+                        </button>
                       )}
                     </div>
                   </article>
@@ -389,6 +445,118 @@ function StoreCatalog() {
           )}
         </div>
       </section>
+
+      <button
+        type="button"
+        onClick={() => setInterestOpen(true)}
+        className="fixed bottom-4 right-4 z-40 inline-flex min-h-12 items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-primary-foreground shadow-xl shadow-black/20 transition-transform hover:scale-[1.03] active:scale-100"
+        style={{ backgroundColor: "var(--store-accent)" }}
+        aria-label={`Abrir a minha lista com ${selectedProducts.length} produtos`}
+      >
+        <ClipboardList className="h-4 w-4" /> Minha Lista
+        <span className="grid min-w-6 place-items-center rounded-full bg-black/20 px-1.5 py-0.5 text-xs">
+          {selectedProducts.length}
+        </span>
+      </button>
+
+      {interestOpen ? (
+        <div
+          className="fixed inset-0 z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="interest-list-title"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setInterestOpen(false)}
+            aria-label="Fechar lista"
+          />
+          <aside className="absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-border bg-background p-5 shadow-2xl">
+            <div className="flex items-center justify-between gap-4 border-b border-border/60 pb-4">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                  Pedido sem checkout
+                </p>
+                <h2 id="interest-list-title" className="mt-1 text-xl font-semibold">
+                  Minha Lista ({selectedProducts.length})
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInterestOpen(false)}
+                className="rounded-full border border-border p-2 text-muted-foreground hover:text-foreground"
+                aria-label="Fechar lista"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto py-5">
+              {selectedProducts.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-border p-8 text-center">
+                  <ClipboardList className="mx-auto h-8 w-8 text-muted-foreground" />
+                  <p className="mt-3 text-sm font-medium">A tua lista está vazia</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Adiciona vários produtos e envia um único pedido pelo WhatsApp.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {selectedProducts.map((product) => {
+                    const selectedPrice = product.sale_price ?? product.price;
+                    return (
+                      <div
+                        key={product.id}
+                        className="flex gap-3 rounded-2xl border border-border/70 p-3"
+                      >
+                        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary/40">
+                          {product.image_url ? (
+                            <img
+                              src={product.image_url}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <ImageOff className="m-auto h-full w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold">{product.name}</p>
+                          <p className="mt-1 text-sm text-primary">
+                            {formatPrice(selectedPrice, store.currency)}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => toggleInterest(product)}
+                          className="self-center rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          aria-label={`Remover ${product.name}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <div className="border-t border-border/60 pt-4">
+              <button
+                type="button"
+                disabled={!selectedProducts.length}
+                onClick={sendInterestList}
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold text-success-foreground transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+                style={{ backgroundColor: "var(--store-accent)" }}
+              >
+                <MessageCircle className="h-4 w-4" /> Enviar Pedido pelo WhatsApp
+              </button>
+              <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                Abre uma conversa com {store.name}; não é checkout nem pagamento online.
+              </p>
+            </div>
+          </aside>
+        </div>
+      ) : null}
 
       {showBranding ? (
         <footer className="px-5 pt-6 text-center text-xs text-muted-foreground">
