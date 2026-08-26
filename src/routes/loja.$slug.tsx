@@ -164,11 +164,30 @@ function StoreCatalog() {
 
   function sendInterestList() {
     if (!selectedProducts.length) return;
+
+    const total = selectedProducts.reduce(
+      (sum, product) => sum + Number(product.sale_price ?? product.price),
+      0,
+    );
     const lines = selectedProducts.map((product, index) => {
       const price = product.sale_price ?? product.price;
-      return `${index + 1}. ${product.name}\\nPreço: ${formatPrice(price, store.currency)}`;
+      return `${index + 1}. ${product.name}\n   Preço: ${formatPrice(price, store.currency)}`;
     });
-    const message = `Olá!\\n\\nTenho interesse nos seguintes produtos:\\n\\n${lines.join("\\n\\n")}\\n\\nPodem enviar mais informações?`;
+    const message = [
+      `*NOVO PEDIDO DE INTERESSE — ${store.name}*`,
+      "",
+      "Olá! Tenho interesse nestes produtos:",
+      "",
+      lines.join("\n\n"),
+      "",
+      `*Total estimado: ${formatPrice(total, store.currency)}*`,
+      "",
+      "Podem confirmar a disponibilidade, entrega e formas de pagamento?",
+      "",
+      "Nome:",
+      "Localidade:",
+    ].join("\n");
+
     selectedProducts.forEach((product) => {
       void logStoreEvent({
         data: {
