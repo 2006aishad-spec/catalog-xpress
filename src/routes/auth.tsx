@@ -10,7 +10,7 @@ export const Route = createFileRoute("/auth")({
   validateSearch: z.object({
     redirect: z.string().optional(),
     mode: z.enum(["signin", "signup", "forgot"]).optional(),
-    plan: z.enum(["free", "basic", "pro"]).optional(),
+    plan: z.enum(["trial", "essential", "pro"]).optional(),
   }),
   head: () => ({
     meta: [
@@ -101,7 +101,7 @@ function AuthPage() {
 
       navigate({
         to: "/criar-loja",
-        search: { plan: plan === "basic" || plan === "pro" ? plan : undefined },
+        search: { plan: plan === "essential" || plan === "pro" ? plan : undefined },
       });
     } catch (error) {
       toast.error(translateError(error));

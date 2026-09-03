@@ -86,7 +86,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
         orders: (orders.data ?? []).length,
         views: (events.data ?? []).filter((e) => e.event_type === "catalog_view").length,
         clicks: (events.data ?? []).filter((e) => e.event_type === "whatsapp_click").length,
-        paid: rows.filter((r) => r.plan !== "free").length,
+        paid: rows.filter((r) => r.plan !== "trial" && r.plan !== "free").length,
       },
       stores: rows,
     };
@@ -96,7 +96,7 @@ export const adminUpdateStore = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { storeId: string; plan?: string; status?: string }) => ({
     storeId: String(data.storeId).slice(0, 40),
-    plan: data.plan && ["free", "basic", "pro"].includes(data.plan) ? data.plan : undefined,
+    plan: data.plan && ["trial", "essential", "pro"].includes(data.plan) ? data.plan : undefined,
     status:
       data.status && ["draft", "published", "suspended"].includes(data.status)
         ? data.status

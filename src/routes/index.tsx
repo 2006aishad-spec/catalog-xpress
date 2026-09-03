@@ -21,7 +21,7 @@ import heroCatalog from "@/assets/hero-catalog.jpg";
 import { AuroraBackground } from "@/components/aurora-background";
 import { BrandLogo } from "@/components/brand-logo";
 import { ShinyText } from "@/components/shiny-text";
-import { PLANS } from "@/lib/store-helpers";
+import { PLANS, type Plan, type PlanId } from "@/lib/store-helpers";
 import { useSession } from "@/hooks/use-session";
 
 export const Route = createFileRoute("/")({

@@ -27,7 +27,7 @@ import {
 } from "@/lib/store-helpers";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
-  validateSearch: z.object({ plan: z.enum(["free", "basic", "pro"]).optional() }),
+  validateSearch: z.object({ plan: z.enum(["trial", "essential", "pro"]).optional() }),
   component: CheckoutPage,
 });
 
@@ -39,7 +39,7 @@ function CheckoutPage() {
   const { data: requests = [] } = useMyPlanRequests(store?.id);
   const createRequest = useCreatePlanRequest();
   const [selected, setSelected] = useState<PlanId>(
-    planParam && planParam !== "free" ? planParam : "basic",
+    planParam && planParam !== "trial" ? planParam : "essential",
   );
 
   if (isLoading) {
@@ -161,7 +161,7 @@ function CheckoutPage() {
         </section>
       ) : (
         <section className="mt-5 grid gap-4 md:grid-cols-2">
-          {PLAN_ORDER.filter((id) => id !== "free").map((id) => {
+          {PLAN_ORDER.filter((id) => id !== "trial").map((id) => {
             const item = PLANS[id];
             const isCurrent = store.plan === id;
             return (

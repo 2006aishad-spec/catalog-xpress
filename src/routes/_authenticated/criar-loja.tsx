@@ -9,8 +9,8 @@ import { onlyDigits, slugify } from "@/lib/store-helpers";
 export const Route = createFileRoute("/_authenticated/criar-loja")({
   validateSearch: (search: Record<string, unknown>) => ({
     plan:
-      search["plan"] === "basic" || search["plan"] === "pro"
-        ? (search["plan"] as "basic" | "pro")
+      search["plan"] === "essential" || search["plan"] === "pro"
+        ? (search["plan"] as "essential" | "pro")
         : undefined,
   }),
   component: CreateStorePage,
@@ -65,7 +65,8 @@ function CreateStorePage() {
         category,
         location: location.trim(),
         whatsapp_number: digits,
-        plan: plan ?? "free",
+        plan: plan ?? "trial",
+        trial_ends_at: plan ? null : new Date(Date.now() + 14 * 86400000).toISOString(),
         owner_name: (sessionUser?.user_metadata?.["full_name"] as string) ?? null,
       });
       if (error) {
