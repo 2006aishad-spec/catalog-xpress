@@ -178,7 +178,7 @@ function Landing() {
                 </Link>
                 <Link
                   to="/auth"
-                  search={{ plan: "free", mode: "signup" }}
+                  search={{ plan: "trial", mode: "signup" }}
                   className="rounded-xl bg-success px-3 py-2 text-sm font-semibold text-success-foreground"
                 >
                   Criar loja
@@ -207,7 +207,7 @@ function Landing() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 to="/auth"
-                search={{ plan: "free", mode: "signup" }}
+                search={{ plan: "trial", mode: "signup" }}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-success px-6 py-3.5 font-semibold text-success-foreground transition-transform hover:scale-[1.02] active:scale-100"
               >
                 Criar catálogo grátis <ArrowRight className="h-4 w-4" />
@@ -468,7 +468,7 @@ function Landing() {
           </p>
           <Link
             to="/auth"
-            search={{ plan: "free", mode: "signup" }}
+            search={{ plan: "trial", mode: "signup" }}
             className="mt-7 inline-flex items-center justify-center gap-2 rounded-xl bg-success px-7 py-3.5 font-semibold text-success-foreground transition-transform hover:scale-[1.02] active:scale-100"
           >
             Criar a minha loja <ArrowRight className="h-4 w-4" />
