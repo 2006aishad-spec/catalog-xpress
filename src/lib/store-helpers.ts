@@ -1,4 +1,4 @@
-export type PlanId = "free" | "basic" | "pro";
+export type PlanId = "trial" | "essential" | "pro";
 
 export type Plan = {
   id: PlanId;
@@ -16,56 +16,61 @@ export type Plan = {
   features: string[];
 };
 
+/** Duração oficial do período de teste. */
+export const TRIAL_DAYS = 14;
+
 /**
  * FONTE ÚNICA DE VERDADE DOS PLANOS.
  * Estes valores têm de ser iguais aos limites aplicados na base de dados
  * (funções plan_max_products / plan_max_categories).
  */
 export const PLANS: Record<PlanId, Plan> = {
-  free: {
-    id: "free",
-    name: "Grátis",
+  trial: {
+    id: "trial",
+    name: "Teste",
     price: "0",
     priceAmount: 0,
-    note: "para começar hoje",
-    maxProducts: 10,
-    maxCategories: 2,
+    note: "14 dias grátis",
+    maxProducts: 15,
+    maxCategories: 3,
     analytics: "Estatísticas básicas",
     branding: "Marca Djumbai Shop visível",
     support: "Suporte normal",
     features: [
-      "10 produtos",
-      "2 categorias",
+      "15 produtos",
+      "3 categorias",
       "Catálogo online",
       "Link público da loja",
       'Botão "Comprar no WhatsApp"',
       "Partilhar catálogo",
+      "Válido por 14 dias",
     ],
   },
-  basic: {
-    id: "basic",
-    name: "Básico",
-    price: "3.500",
-    priceAmount: 3500,
+  essential: {
+    id: "essential",
+    name: "Essencial",
+    price: "1.450",
+    priceAmount: 1450,
     note: "por mês",
-    maxProducts: 60,
-    maxCategories: 30,
+    maxProducts: 80,
+    maxCategories: 20,
     analytics: "Estatísticas básicas",
     branding: "Marca Djumbai Shop visível",
     support: "Suporte normal",
     features: [
-      "60 produtos",
-      "30 categorias",
+      "80 produtos",
+      "20 categorias",
       "Logo da loja",
       "Registo de pedidos",
       "Estatísticas básicas",
+      "Suporte normal",
     ],
   },
   pro: {
     id: "pro",
     name: "Profissional",
-    price: "7.900",
-    priceAmount: 7900,
+    price: "3.000",
+    priceAmount: 3000,
     note: "por mês",
     maxProducts: Number.POSITIVE_INFINITY,
     maxCategories: Number.POSITIVE_INFINITY,
@@ -75,7 +80,7 @@ export const PLANS: Record<PlanId, Plan> = {
     features: [
       "Produtos ilimitados",
       "Categorias ilimitadas",
-      "Personalização completa do catálogo",
+      "Personalização completa (logo + capa + cor)",
       "Sem marca Djumbai Shop",
       "Relatórios avançados",
       "Suporte prioritário",
@@ -84,18 +89,42 @@ export const PLANS: Record<PlanId, Plan> = {
 };
 
 
-export const PLAN_ORDER: PlanId[] = ["free", "basic", "pro"];
+export const PLAN_ORDER: PlanId[] = ["trial", "essential", "pro"];
+
+export const PAID_PLANS: PlanId[] = ["essential", "pro"];
 
 /** Número de WhatsApp da equipa Djumbai Shop (pagamento manual e suporte). */
 export const TEAM_WHATSAPP = "245955469148";
 
 export function planOf(plan: string | null | undefined): Plan {
-  return PLANS[(plan as PlanId) ?? "free"] ?? PLANS.free;
+  if (plan === "basic") return PLANS.essential;
+  if (plan === "free") return PLANS.trial;
+  return PLANS[(plan as PlanId) ?? "trial"] ?? PLANS.trial;
+}
+
+export function isPaidPlan(plan: string | null | undefined) {
+  return planOf(plan).id !== "trial";
+}
+
+/** Dias inteiros que faltam do teste (0 quando já terminou). */
+export function trialDaysLeft(trialEndsAt: string | null | undefined) {
+  if (!trialEndsAt) return 0;
+  const ms = new Date(trialEndsAt).getTime() - Date.now();
+  return ms <= 0 ? 0 : Math.ceil(ms / 86_400_000);
+}
+
+/** Teste terminado: catálogo público continua, mas a edição fica bloqueada. */
+export function isTrialExpired(store: { plan: string; trial_ends_at?: string | null } | null | undefined) {
+  if (!store) return false;
+  if (isPaidPlan(store.plan)) return false;
+  if (!store.trial_ends_at) return false;
+  return new Date(store.trial_ends_at).getTime() < Date.now();
 }
 
 export function limitLabel(value: number) {
   return Number.isFinite(value) ? String(value) : "Ilimitado";
 }
+
 
 export function slugify(value: string) {
   return value

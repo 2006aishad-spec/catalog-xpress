@@ -150,8 +150,8 @@ function AdminPage() {
                     }
                     className="ml-2 rounded-lg border border-input bg-surface/60 px-3 py-2 text-xs text-foreground outline-none"
                   >
-                    <option value="free">Grátis</option>
-                    <option value="basic">Básico</option>
+                    <option value="trial">Teste (14 dias)</option>
+                    <option value="essential">Essencial</option>
                     <option value="pro">Profissional</option>
                   </select>
                 </label>
