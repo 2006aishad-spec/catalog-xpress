@@ -28,7 +28,7 @@ const categories = [
 
 function CreateStorePage() {
   const navigate = useNavigate();
-  const { plan } = Route.useSearch();
+  Route.useSearch();
   const { data: store, isLoading } = useMyStore();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -65,8 +65,10 @@ function CreateStorePage() {
         category,
         location: location.trim(),
         whatsapp_number: digits,
-        plan: plan ?? "trial",
-        trial_ends_at: plan ? null : new Date(Date.now() + 14 * 86400000).toISOString(),
+        // Todas as lojas novas começam com o teste de 14 dias.
+        // O plano escolhido na landing só orienta a apresentação; não concede acesso pago.
+        plan: "trial",
+        trial_ends_at: new Date(Date.now() + 14 * 86400000).toISOString(),
         owner_name: (sessionUser?.user_metadata?.["full_name"] as string) ?? null,
       });
       if (error) {
@@ -206,3 +208,4 @@ function CreateStorePage() {
     </main>
   );
 }
+
