@@ -117,10 +117,10 @@ const demoProducts = [
 ];
 
 // Fonte única de verdade dos planos: src/lib/store-helpers.ts
-const plans = [
-  { ...PLANS.free, cta: "Começar grátis", planId: "free" as const, highlight: false },
-  { ...PLANS.basic, cta: "Escolher Básico", planId: "basic" as const, highlight: true },
-  { ...PLANS.pro, cta: "Escolher Pro", planId: "pro" as const, highlight: false },
+const plans: (Plan & { cta: string; planId: PlanId; highlight: boolean })[] = [
+  { ...PLANS.trial, cta: "Começar teste grátis", planId: "trial", highlight: false },
+  { ...PLANS.essential, cta: "Escolher Essencial", planId: "essential", highlight: true },
+  { ...PLANS.pro, cta: "Escolher Pro", planId: "pro", highlight: false },
 ];
 
 const faqs = [
@@ -129,18 +129,19 @@ const faqs = [
     a: "Não. Tudo é feito por formulários simples no telemóvel, com instruções curtas em cada passo.",
   },
   {
-    q: "Os pagamentos passam pela plataforma?",
-    a: "Os clientes contactam a tua loja pelo WhatsApp e combinam contigo a forma de pagamento. O pagamento da mensalidade do Djumbai Shop é tratado separadamente através da nossa equipa.",
+    q: "O que acontece depois dos 14 dias?",
+    a: "O teu catálogo continua online para os clientes. Para continuares a editar produtos e personalizar a loja, precisas de fazer upgrade para um plano pago.",
   },
   {
-    q: "Posso usar o meu domínio?",
-    a: "Sim, no plano Profissional podes ligar o teu domínio próprio e remover a marca Djumbai.",
+    q: "Os pagamentos passam pela plataforma?",
+    a: "Os clientes contactam a tua loja pelo WhatsApp e combinam contigo a forma de pagamento. O pagamento da mensalidade do Djumbai Shop é tratado separadamente através da nossa equipa.",
   },
   {
     q: "Posso cancelar quando quiser?",
     a: "O cancelamento é tratado pela nossa equipa nesta fase. O pagamento automático e a área de faturação automática serão adicionados futuramente.",
   },
 ];
+
 
 function Landing() {
   const { session } = useSession();
