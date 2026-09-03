@@ -15,6 +15,7 @@ import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BrandLogo } from "@/components/brand-logo";
 import { amIAdmin } from "@/lib/admin.functions";
+import { TrialBanner } from "@/components/trial-gate";
 
 
 const navItems = [
@@ -108,6 +109,7 @@ export function DashboardShell({
           ) : null}
         </nav>
       </header>
+      <TrialBanner />
 
       <main className="mx-auto max-w-6xl px-5 py-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
