@@ -465,7 +465,7 @@ function Landing() {
         <div className="glass-panel glow-ring mx-auto max-w-4xl rounded-3xl p-9 text-center">
           <h2 className="text-3xl font-bold sm:text-4xl">Publica o teu catálogo hoje</h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Grátis para começar. Sem cartão, sem comissão por venda.
+            14 dias grátis para começar. Depois, escolhe o plano que acompanha o teu negócio.
           </p>
           <Link
             to="/auth"
@@ -501,3 +501,4 @@ function Landing() {
     </main>
   );
 }
+
