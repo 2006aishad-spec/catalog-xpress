@@ -5,6 +5,7 @@ import { ImagePlus, Loader2, Pencil, Plus, Star, Trash2, X } from "lucide-react"
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardShell, EmptyState, NoStoreState } from "@/components/dashboard-shell";
+import { useUpgradeGuard } from "@/components/trial-gate";
 import { useCategories, useMyStore, useProducts, type Product } from "@/hooks/use-store-data";
 import { signedImageUrl, uploadProductImage } from "@/lib/images";
 import {
@@ -25,11 +26,13 @@ function ProductsPage() {
   const { data: products = [] } = useProducts(store?.id);
   const { data: categories = [] } = useCategories(store?.id);
   const [editing, setEditing] = useState<Product | "new" | null>(null);
+  const upgrade = useUpgradeGuard();
 
   const plan = planOf(store?.plan);
   const atLimit = products.length >= plan.maxProducts;
 
   async function remove(product: Product) {
+    if (!upgrade.allow()) return;
     if (!confirm(`Eliminar "${product.name}"? Esta ação não pode ser desfeita.`)) return;
     const { error } = await supabase.from("products").delete().eq("id", product.id);
     if (error) {
@@ -41,11 +44,13 @@ function ProductsPage() {
   }
 
   async function toggleActive(product: Product) {
+    if (!upgrade.allow()) return;
     await supabase.from("products").update({ is_active: !product.is_active }).eq("id", product.id);
     queryClient.invalidateQueries({ queryKey: ["products", store?.id] });
   }
 
   async function toggleFeatured(product: Product) {
+    if (!upgrade.allow()) return;
     await supabase
       .from("products")
       .update({ is_featured: !product.is_featured })
@@ -76,6 +81,7 @@ function ProductsPage() {
         <button
           type="button"
           onClick={() => {
+            if (!upgrade.allow()) return;
             if (atLimit) {
               toast.error(
                 `O plano ${plan.name} permite ${limitLabel(plan.maxProducts)} produtos. Faz upgrade para adicionar mais.`,
@@ -120,7 +126,7 @@ function ProductsPage() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={() => setEditing(product)}
+                    onClick={() => { if (upgrade.allow()) setEditing(product); }}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-secondary/60"
                   >
                     <Pencil className="h-3.5 w-3.5" /> Editar
@@ -158,6 +164,7 @@ function ProductsPage() {
         </ul>
       )}
 
+      {upgrade.upgradeModal}
       {editing ? (
         <ProductForm
           storeId={store.id}
