@@ -217,7 +217,7 @@ function CheckoutPage() {
             onClick={() => navigate({ to: "/loja" })}
             className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-3.5 text-sm font-medium hover:bg-secondary/60"
           >
-            Continuar no plano Grátis
+            Voltar à loja
           </button>
         </div>
       ) : null}
@@ -289,3 +289,4 @@ function Row({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
