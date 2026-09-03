@@ -151,7 +151,7 @@ export function NoStoreState() {
       action={
         <Link
           to="/criar-loja"
-          search={{}}
+          search={{ plan: undefined }}
           className="rounded-xl bg-success px-5 py-3 text-sm font-semibold text-success-foreground"
         >
           Criar a minha loja

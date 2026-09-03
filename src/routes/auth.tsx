@@ -101,7 +101,7 @@ function AuthPage() {
 
       navigate({
         to: "/criar-loja",
-        search: plan === "basic" || plan === "pro" ? { plan } : {},
+        search: { plan: plan === "basic" || plan === "pro" ? plan : undefined },
       });
     } catch (error) {
       toast.error(translateError(error));
