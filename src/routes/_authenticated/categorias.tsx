@@ -5,6 +5,7 @@ import { Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardShell, EmptyState, NoStoreState } from "@/components/dashboard-shell";
+import { useUpgradeGuard } from "@/components/trial-gate";
 import { useCategories, useMyStore } from "@/hooks/use-store-data";
 import { limitLabel, planOf } from "@/lib/store-helpers";
 
@@ -18,6 +19,7 @@ function CategoriesPage() {
   const { data: categories = [] } = useCategories(store?.id);
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
+  const upgrade = useUpgradeGuard();
 
   const plan = planOf(store?.plan);
   const atLimit = categories.length >= plan.maxCategories;
@@ -25,6 +27,7 @@ function CategoriesPage() {
   async function addCategory(event: React.FormEvent) {
     event.preventDefault();
     if (!store) return;
+    if (!upgrade.allow()) return;
     if (atLimit) {
       toast.error(`O plano ${plan.name} permite ${limitLabel(plan.maxCategories)} categorias.`);
       return;
@@ -46,11 +49,13 @@ function CategoriesPage() {
   }
 
   async function toggle(id: string, isActive: boolean) {
+    if (!upgrade.allow()) return;
     await supabase.from("categories").update({ is_active: !isActive }).eq("id", id);
     queryClient.invalidateQueries({ queryKey: ["categories", store?.id] });
   }
 
   async function remove(id: string) {
+    if (!upgrade.allow()) return;
     if (!confirm("Eliminar esta categoria? Os produtos ficam sem categoria.")) return;
     await supabase.from("categories").delete().eq("id", id);
     toast.success("Categoria eliminada.");
@@ -78,6 +83,7 @@ function CategoriesPage() {
       title="Categorias"
       description={`${categories.length} de ${limitLabel(plan.maxCategories)} no plano ${plan.name}.`}
     >
+      {upgrade.upgradeModal}
       <form onSubmit={addCategory} className="glass-panel flex flex-wrap gap-3 rounded-2xl p-5">
         <input
           value={name}
