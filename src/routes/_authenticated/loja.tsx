@@ -8,6 +8,7 @@ import { DashboardShell, NoStoreState } from "@/components/dashboard-shell";
 import { useMyStore } from "@/hooks/use-store-data";
 import { PLANS, type PlanId, limitLabel, onlyDigits, planOf } from "@/lib/store-helpers";
 import { uploadStoreAsset } from "@/lib/images";
+import { LockedNotice, useUpgradeGuard } from "@/components/trial-gate";
 
 export const Route = createFileRoute("/_authenticated/loja")({
   component: StoreSettingsPage,
@@ -21,6 +22,7 @@ function StoreSettingsPage() {
   const [pendingPlan, setPendingPlan] = useState<PlanId | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const guard = useUpgradeGuard();
 
   if (isLoading) {
     return (
@@ -42,15 +44,16 @@ function StoreSettingsPage() {
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!guard.allow()) return;
     const form = new FormData(event.currentTarget);
     setSaving(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const userId = sessionData.session?.user.id;
       if (!userId) throw new Error("Sessão expirada.");
-      if (logoFile && plan.id === "free") {
+      if (logoFile && plan.id === "trial") {
         throw new Error(
-          "Este recurso está disponível a partir do plano Básico. Faz upgrade para desbloquear.",
+          "Este recurso está disponível a partir do plano Essencial. Faz upgrade para desbloquear.",
         );
       }
       if (bannerFile && plan.id !== "pro") {
@@ -98,18 +101,12 @@ function StoreSettingsPage() {
   async function changePlan(planId: PlanId) {
     // Planos pagos: pedido registado + pagamento manual confirmado pela equipa no WhatsApp.
     // Nunca há ativação automática.
-    if (planId !== "free") {
-      setPendingPlan(planId);
-      navigate({ to: "/checkout", search: { plan: planId } });
+    if (planId === "trial") {
+      toast.info("O plano de teste só está disponível nos primeiros 14 dias da loja.");
       return;
     }
-    const { error } = await supabase.from("stores").update({ plan: "free" }).eq("id", store!.id);
-    if (error) {
-      toast.error("Não foi possível mudar de plano.");
-      return;
-    }
-    toast.success("Voltaste ao plano Grátis.");
-    queryClient.invalidateQueries({ queryKey: ["my-store"] });
+    setPendingPlan(planId);
+    navigate({ to: "/checkout", search: { plan: planId } });
   }
 
   return (
@@ -117,6 +114,12 @@ function StoreSettingsPage() {
       title="Loja e plano"
       description="Personaliza a informação pública do catálogo e escolhe o teu plano."
     >
+      {guard.locked ? (
+        <div className="mb-5">
+          <LockedNotice />
+        </div>
+      ) : null}
+      {guard.upgradeModal}
       <form onSubmit={save} className="glass-panel grid gap-4 rounded-2xl p-6 sm:grid-cols-2">
         <Field label="Nome da loja" className="sm:col-span-2">
           <input name="name" defaultValue={store.name} required maxLength={80} className={input} />
@@ -158,9 +161,9 @@ function StoreSettingsPage() {
           )}
         </Field>
         <Field label="Logo da loja (máx. 5 MB)">
-          {plan.id === "free" ? (
+          {plan.id === "trial" ? (
             <div className="rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
-              O logo está disponível a partir do plano Básico. Faz upgrade para desbloquear.
+              O logo está disponível a partir do plano Essencial. Faz upgrade para desbloquear.
             </div>
           ) : (
             <input
@@ -246,8 +249,8 @@ function StoreSettingsPage() {
             >
               {item.id === plan.id
                 ? "Plano atual"
-                : item.id === "free"
-                  ? "Voltar ao Grátis"
+                : item.id === "trial"
+                  ? "Só nos primeiros 14 dias"
                   : `Pedir ${item.name}`}
             </button>
           </article>
