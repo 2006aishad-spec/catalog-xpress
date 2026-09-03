@@ -754,6 +754,7 @@ export type Database = {
           slug: string
           status: string
           tagline: string
+          trial_ends_at: string | null
           updated_at: string
           whatsapp_number: string
         }
@@ -774,6 +775,7 @@ export type Database = {
           slug: string
           status?: string
           tagline?: string
+          trial_ends_at?: string | null
           updated_at?: string
           whatsapp_number?: string
         }
@@ -794,6 +796,7 @@ export type Database = {
           slug?: string
           status?: string
           tagline?: string
+          trial_ends_at?: string | null
           updated_at?: string
           whatsapp_number?: string
         }
@@ -838,6 +841,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_trial_expired: { Args: { _store_id: string }; Returns: boolean }
       owns_store: { Args: { _store_id: string }; Returns: boolean }
       plan_max_categories: { Args: { _plan: string }; Returns: number }
       plan_max_products: { Args: { _plan: string }; Returns: number }
