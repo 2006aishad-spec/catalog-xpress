@@ -97,8 +97,6 @@ export const PAID_PLANS: PlanId[] = ["essential", "pro"];
 export const TEAM_WHATSAPP = "245955469148";
 
 export function planOf(plan: string | null | undefined): Plan {
-  if (plan === "basic") return PLANS.essential;
-  if (plan === "free") return PLANS.trial;
   return PLANS[(plan as PlanId) ?? "trial"] ?? PLANS.trial;
 }
 
@@ -256,3 +254,4 @@ export const PAYMENT_STATUS_LABEL: Record<string, string> = {
   active: "Ativo",
   rejected: "Rejeitado",
 };
+
