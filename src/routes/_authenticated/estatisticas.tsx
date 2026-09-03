@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardShell, EmptyState, NoStoreState } from "@/components/dashboard-shell";
+import { LockedNotice, useTrialStatus } from "@/components/trial-gate";
 import { useMyStore } from "@/hooks/use-store-data";
 import { planOf } from "@/lib/store-helpers";
 
@@ -12,9 +13,10 @@ export const Route = createFileRoute("/_authenticated/estatisticas")({
 
 function StatsPage() {
   const { data: store, isLoading } = useMyStore();
+  const { locked } = useTrialStatus();
   const { data } = useQuery({
     queryKey: ["events-detail", store?.id],
-    enabled: !!store?.id,
+    enabled: !!store?.id && !locked,
     queryFn: async () => {
       const { data: events, error } = await supabase
         .from("store_events")
@@ -54,7 +56,9 @@ function StatsPage() {
       title="Estatísticas"
       description={`Métricas ${plan.analytics.toLowerCase()} do plano ${plan.name} (últimos 1000 eventos).`}
     >
-      {events.length === 0 ? (
+      {locked ? (
+        <LockedNotice>As estatísticas avançadas ficam disponíveis após fazeres upgrade para um plano pago.</LockedNotice>
+      ) : events.length === 0 ? (
         <EmptyState
           title="Sem dados ainda"
           text="Assim que partilhares o link do catálogo, começamos a registar visitas e cliques no WhatsApp."
